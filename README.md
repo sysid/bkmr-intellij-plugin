@@ -121,4 +121,15 @@ bkmr-intellij-plugin/
 - Leverages existing LSP completion and command execution
 
 This implementation provides a complete JetBrains IDE integration that leverages your existing bkmr-lsp server while adding IDE-specific enhancements like tool windows, enhanced completion, and integrated settings management.
+
+
+
+
+
 # bkmr-intellij-plugin
+[Language Server Protocol (LSP) | IntelliJ Platform Plugin SDK](https://plugins.jetbrains.com/docs/intellij/language-server-protocol.html#supported-ides)
+
+
+# Usage
+
+type -> arrow up/down -> F1 help -> tab: completion

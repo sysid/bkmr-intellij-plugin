@@ -1,0 +1,49 @@
+<!-- File: src/main/resources/META-INF/plugin.xml -->
+<idea-plugin>
+    <id>com.sysid.bkmr</id>
+    <name>bkmr</name>
+    <vendor email="your-email@example.com" url="https://github.com/sysid/bkmr">sysid</vendor>
+
+    <description><![CDATA[
+        Integration with bkmr-lsp for snippet management and code completion.
+
+        This plugin provides:
+        - LSP-based code completion for bkmr snippets
+        - Integration with bkmr-lsp server
+        - Configurable settings for binary path
+    ]]></description>
+
+    <change-notes><![CDATA[
+        <h3>1.0.0</h3>
+        <ul>
+            <li>Initial release</li>
+            <li>Basic LSP integration</li>
+            <li>Settings configuration</li>
+        </ul>
+    ]]></change-notes>
+
+    <!-- Plugin version -->
+    <version>1.0.0</version>
+
+    <!-- Plugin dependencies -->
+    <depends>com.intellij.modules.ultimate</depends>
+
+    <idea-version since-build="232.8660" until-build="251.*"/>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- LSP Server Support Provider -->
+        <platform.lsp.serverSupportProvider
+            implementation="com.sysid.bkmr.BkmrLspServerSupportProvider"/>
+
+        <!-- Settings -->
+        <applicationService
+            serviceImplementation="com.sysid.bkmr.BkmrSettings"/>
+
+        <!-- Settings UI -->
+        <applicationConfigurable
+            parentId="tools"
+            instance="com.sysid.bkmr.BkmrConfigurable"
+            id="com.sysid.bkmr.BkmrConfigurable"
+            displayName="bkmr"/>
+    </extensions>
+</idea-plugin>
