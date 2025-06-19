@@ -1,4 +1,4 @@
-// File: src/main/kotlin/com/sysid/bkmr/BkmrConfigurable.kt
+// File: src/main/kotlin/com/sysid/bkmr/settings/BkmrConfigurable.kt
 package com.sysid.bkmr
 
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
@@ -43,6 +43,14 @@ class BkmrConfigurable : Configurable {
             row("Enable Debug Logging:") {
                 cell(enableDebugLoggingCheckBox)
                     .comment("Enable verbose logging for troubleshooting")
+            }
+            row {
+                text("""
+                    <b>Usage:</b><br/>
+                    Type <code>:</code> followed by letters to trigger snippet completion.<br/>
+                    Examples: <code>:hello</code>, <code>:snip:java</code>, <code>:s:test</code><br/>
+                    Use Ctrl+Space for manual completion in snippet contexts.
+                """.trimIndent())
             }
         }
     }

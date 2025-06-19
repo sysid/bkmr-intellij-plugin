@@ -14,12 +14,11 @@ class BkmrLspServerSupportProvider : LspServerSupportProvider {
         file: VirtualFile,
         serverStarter: LspServerSupportProvider.LspServerStarter
     ) {
-        // Only start for text files (you can customize this)
+        // Only start for text files
         if (file.isDirectory || file.extension?.lowercase() in listOf("jpg", "png", "gif", "pdf", "zip")) {
             return
         }
 
-        // Get settings (will create this next)
         val settings = BkmrSettings.getInstance()
         if (!settings.enableLspIntegration || settings.bkmrLspBinaryPath.isBlank()) {
             return
@@ -32,7 +31,7 @@ class BkmrLspServerSupportProvider : LspServerSupportProvider {
 class BkmrLspServerDescriptor(project: Project) : ProjectWideLspServerDescriptor(project, "bkmr-lsp") {
 
     override fun isSupportedFile(file: VirtualFile): Boolean {
-        // Support all text files except binaries
+        // Support text files only
         return !file.isDirectory &&
                file.extension?.lowercase() !in listOf("jpg", "png", "gif", "pdf", "zip", "exe", "dll", "so")
     }
@@ -43,9 +42,17 @@ class BkmrLspServerDescriptor(project: Project) : ProjectWideLspServerDescriptor
         return GeneralCommandLine().apply {
             exePath = settings.bkmrLspBinaryPath
             withWorkDirectory(project.basePath)
-            // Add any environment variables your LSP server needs
             withEnvironment("RUST_LOG", if (settings.enableDebugLogging) "debug" else "info")
         }
     }
-}
 
+    override fun createInitializationOptions(): Any? {
+        // Provide initialization options to ensure proper setup
+        return mapOf(
+            "bkmr" to mapOf(
+                "maxCompletions" to 50,
+                "triggerCharacters" to listOf(":")
+            )
+        )
+    }
+}

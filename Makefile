@@ -32,12 +32,15 @@ ADMIN::  ## ##################################################################
 
 .PHONY: init
 init:  ## init
-	@rm -fr ~/xxx
-	mkdir -p ~/xxx
+	rm -v build/idea-sandbox/IU-2025.1.1.1/log/idea.log
 
 .PHONY: test
 test:  ## test in sandbox Ide
 	./gradlew runIde
+
+.PHONY: log-plugin
+log-plugin:  ## log-plugin
+	tail -f build/idea-sandbox/IU-2025.1.1.1/log/idea.log | grep -u completion
 
 ################################################################################
 # Building, Deploying \

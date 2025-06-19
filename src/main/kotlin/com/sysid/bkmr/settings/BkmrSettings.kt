@@ -1,4 +1,4 @@
-// File: src/main/kotlin/com/sysid/bkmr/BkmrSettings.kt
+// File: src/main/kotlin/com/sysid/bkmr/settings/BkmrSettings.kt
 package com.sysid.bkmr
 
 import com.intellij.openapi.application.ApplicationManager
@@ -34,4 +34,3 @@ class BkmrSettings : PersistentStateComponent<BkmrSettings> {
         enableDebugLogging = state.enableDebugLogging
     }
 }
-
