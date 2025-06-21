@@ -1,107 +1,75 @@
 .DEFAULT_GOAL := help
-#MAKEFLAGS += --no-print-directory
 
-# You can set these variables from the command line, and also from the environment for the first two.
-PREFIX ?= /usr/local
-BINPREFIX ?= "$(PREFIX)/bin"
+VERSION = $(shell cat VERSION)
 
-VERSION       = $(shell cat VERSION)
-
-SHELL	= bash
+SHELL = bash
 .ONESHELL:
 
-app_root := $(if $(PROJ_DIR),$(PROJ_DIR),$(CURDIR))
-
-pkg_src =  $(app_root)/bkmr-intellij-plugin
-tests_src = $(app_root)/bkmr-intellij-plugin
-BINARY = bkmr-lsp
-
-# Makefile directory
-CODE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-
-# define files
-MANS = $(wildcard ./*.md)
-MAN_HTML = $(MANS:.md=.html)
-MAN_PAGES = $(MANS:.md=.1)
-# avoid circular targets
-MAN_BINS = $(filter-out ./tw-extras.md, $(MANS))
-
 ################################################################################
-# Admin \
-ADMIN::  ## ##################################################################
+# Development \
+DEVELOPMENT::  ## ##################################################################
 
 .PHONY: init
-init:  ## init
-	rm -v build/idea-sandbox/IU-2025.1.1.1/log/idea.log
+init:  ## initialize development environment
+	@rm -fv build/idea-sandbox/*/log/idea.log 2>/dev/null || true
 
 .PHONY: test
-test:  ## test in sandbox Ide
+test:  ## run plugin in sandbox IDE
 	./gradlew runIde
 
 .PHONY: log-plugin
-log-plugin:  ## log-plugin
-	tail -f build/idea-sandbox/IU-2025.1.1.1/log/idea.log | grep -u completion
+log-plugin:  ## view plugin logs
+	tail -f build/idea-sandbox/*/log/idea.log | grep -u completion
 
 ################################################################################
-# Building, Deploying \
+# Building \
 BUILDING:  ## ##################################################################
 
-.PHONY: all
-all: clean build install  ## all
-	:
-
-.PHONY: all-fast
-all-fast: build-fast install-debug  ## all-fast: no release build
-	:
-
-.PHONY: upload
-upload:  ## upload
-	@if [ -z "$$CARGO_REGISTRY_TOKEN" ]; then \
-		echo "Error: CARGO_REGISTRY_TOKEN is not set"; \
-		exit 1; \
-	fi
-	@echo "CARGO_REGISTRY_TOKEN is set"
-	pushd $(pkg_src) && cargo release publish --execute
-
 .PHONY: build
-build:  ## build
+build:  ## build plugin
 	./gradlew buildPlugin
 
-.PHONY: install-debug
-install-debug: uninstall  ## install-debug (links to target/debug)
-	@ln -vsf $(realpath bkmr-lsp/target/debug/$(BINARY)) $(HOME)/bin/$(BINARY)
+.PHONY: clean
+clean:  ## clean build artifacts
+	./gradlew clean
 
+.PHONY: sign
+sign:  ## sign plugin for distribution
+	./gradlew signPlugin
 
-.PHONY: uninstall
-uninstall:  ## uninstall
-	-@test -f ~/bin/$(BINARY) && rm -v ~/bin/$(BINARY)
-	rm -vf ~/.bash_completions/bkmr-lsp
+.PHONY: publish
+publish:  ## publish plugin to marketplace
+	./gradlew publishPlugin
 
-.PHONY: bump-major
-bump-major:  check-github-token  ## bump-major, tag and push
-	bump-my-version bump --commit --tag major
+################################################################################
+# Version Management \
+VERSION_MGMT:  ## ##################################################################
+
+.PHONY: bump-patch
+bump-patch: check-github-token  ## bump patch version (1.0.0 → 1.0.1)
+	bump-my-version bump patch
 	git push
 	git push --tags
 	@$(MAKE) create-release
 
 .PHONY: bump-minor
-bump-minor:  check-github-token  ## bump-minor, tag and push
-	bump-my-version bump --commit --tag minor
+bump-minor: check-github-token  ## bump minor version (1.0.0 → 1.1.0)
+	bump-my-version bump minor
 	git push
 	git push --tags
 	@$(MAKE) create-release
 
-.PHONY: bump-patch
-bump-patch:  check-github-token  ## bump-patch, tag and push
-	bump-my-version bump --commit --tag patch
+.PHONY: bump-major
+bump-major: check-github-token  ## bump major version (1.0.0 → 2.0.0)
+	bump-my-version bump major
 	git push
 	git push --tags
 	@$(MAKE) create-release
 
 .PHONY: create-release
-create-release: check-github-token  ## create a release on GitHub via the gh cli
+create-release: check-github-token  ## create GitHub release
 	@if ! command -v gh &>/dev/null; then \
-		echo "You do not have the GitHub CLI (gh) installed. Please create the release manually."; \
+		echo "GitHub CLI (gh) not installed. Please create release manually."; \
 		exit 1; \
 	else \
 		echo "Creating GitHub release for v$(VERSION)"; \
@@ -109,67 +77,15 @@ create-release: check-github-token  ## create a release on GitHub via the gh cli
 	fi
 
 .PHONY: check-github-token
-check-github-token:  ## Check if GITHUB_TOKEN is set
+check-github-token:  ## check if GITHUB_TOKEN is set
 	@if [ -z "$$GITHUB_TOKEN" ]; then \
-		echo "GITHUB_TOKEN is not set. Please export your GitHub token before running this command."; \
+		echo "GITHUB_TOKEN not set. Please export your GitHub token."; \
 		exit 1; \
 	fi
-	@echo "GITHUB_TOKEN is set"
-	#@$(MAKE) fix-version  # not working: rustrover deleay
-
-
-.PHONY: fix-version
-fix-version:  ## fix-version of Cargo.toml, re-connect with HEAD
-	git add bkmr-lsp/Cargo.lock
-	git commit --amend --no-edit
-	git tag -f "v$(VERSION)"
-	git push --force-with-lease
-	git push --tags --force
-
-.PHONY: format
-format:  ## format
-	bkmr-lsp_DB_URL=../db/bkmr-lsp.db pushd $(pkg_src) && cargo fmt
-
-.PHONY: lint
-lint:  ## lint and fix
-	pushd $(pkg_src) && cargo clippy --fix  -- -A unused_imports  # avoid errors
-	pushd $(pkg_src) && cargo fix --lib -p bkmr-lsp --tests
-
-.PHONY: doc
-doc:  ## doc
-	@rustup doc --std
-	pushd $(pkg_src) && cargo doc --open
 
 ################################################################################
-# Clean \
-CLEAN:  ## ############################################################
-
-.PHONY: clean
-clean:clean-rs  ## clean all
-	:
-
-.PHONY: clean-build
-clean-build: ## remove build artifacts
-	rm -fr build/
-	rm -fr dist/
-	rm -fr .eggs/
-	find . \( -path ./env -o -path ./venv -o -path ./.env -o -path ./.venv \) -prune -o -name '*.egg-info' -exec rm -fr {} +
-	find . \( -path ./env -o -path ./venv -o -path ./.env -o -path ./.venv \) -prune -o -name '*.egg' -exec rm -f {} +
-
-.PHONY: clean-pyc
-clean-pyc: ## remove Python file artifacts
-	find . -name '*.pyc' -exec rm -f {} +
-	find . -name '*.pyo' -exec rm -f {} +
-	find . -name '*~' -exec rm -f {} +
-	find . -name '__pycache__' -exec rm -fr {} +
-
-.PHONY: clean-rs
-clean-rs:  ## clean-rs
-	pushd $(pkg_src) && cargo clean -v
-
-################################################################################
-# Misc \
-MISC:  ## ############################################################
+# Utilities \
+UTILITIES:  ## ##################################################################
 
 define PRINT_HELP_PYSCRIPT
 import re, sys
@@ -184,22 +100,5 @@ endef
 export PRINT_HELP_PYSCRIPT
 
 .PHONY: help
-help:
+help:  ## show this help
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
-
-debug:  ## debug
-	@echo "-D- CODE_DIR: $(CODE_DIR)"
-
-
-.PHONY: list
-list: *  ## list
-	@echo $^
-
-.PHONY: list2
-%: %.md  ## list2
-	@echo $^
-
-
-%-plan:  ## call with: make <whatever>-plan
-	@echo $@ : $*
-	@echo $@ : $^

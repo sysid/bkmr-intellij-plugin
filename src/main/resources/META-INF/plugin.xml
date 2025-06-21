@@ -18,8 +18,9 @@
         <p><b>Usage:</b></p>
         <ul>
             <li>Type <code>:</code> followed by letters to trigger snippet completion</li>
-            <li>Examples: <code>:hello</code>, <code>:snip:java</code>, <code>:s:test</code></li>
+            <li>Examples: <code>:hello</code></li>
             <li>Use Ctrl+Space for manual completion in snippet contexts</li>
+            <li>Snippet will be inserted after the ':hello'.</li>
         </ul>
 
         <p><b>Requirements:</b></p>
