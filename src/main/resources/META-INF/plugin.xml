@@ -40,7 +40,7 @@
         </ul>
     ]]></change-notes>
 
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 
     <depends>com.intellij.modules.ultimate</depends>
 
