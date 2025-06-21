@@ -61,7 +61,7 @@ bump-my-version bump major   # 1.0.0 → 2.0.0
 ### Debugging
 
 ```bash
-# View plugin logs
+# View plugin logs of sandbox
 make log-plugin
 
 # View LSP server logs
@@ -89,3 +89,6 @@ Access plugin settings via **File → Settings → Tools → bkmr**:
 
 - [LSP Integration Guide](https://plugins.jetbrains.com/docs/intellij/language-server-protocol.html)
 - [Plugin Development](https://plugins.jetbrains.com/docs/intellij/developing-plugins.html)
+
+## Gotcha
+- completion only works in project context (scratch  files are ignored)

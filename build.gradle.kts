@@ -29,13 +29,18 @@ java {
 
 kotlin {
     jvmToolchain(17)
+
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        freeCompilerArgs.add("-Xjsr305=strict")
+    }
 }
 
 tasks {
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = "17"
-            freeCompilerArgs = listOf("-Xjsr305=strict")
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+            freeCompilerArgs.add("-Xjsr305=strict")
         }
     }
 
@@ -77,6 +82,14 @@ tasks {
     }
 
     publishPlugin {
-        token.set(System.getenv("PUBLISH_TOKEN"))
+        token.set(System.getenv("JETBRAINS_MARKETPLACE_TOKEN"))
+    }
+
+    register("printToken") {
+        description = "Print the JetBrains Marketplace token status"
+        group = "publishing"
+        doLast {
+            println("Token: " + (project.findProperty("token") ?: "NOT SET"))
+        }
     }
 }

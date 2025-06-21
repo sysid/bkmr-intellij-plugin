@@ -17,13 +17,118 @@ init:  ## initialize development environment
 test:  ## run plugin in sandbox IDE
 	./gradlew runIde
 
-.PHONY: log-plugin
+.PHONY: log-plugin-sandbox
 log-plugin:  ## view plugin logs
 	tail -f build/idea-sandbox/*/log/idea.log | grep -u completion
+
+.PHONY: log-plugin-intellij
+log-plugin-intellij:  ## log-plugin-intellij
+	tail -f "$(HOME)/Library/Logs/JetBrains/IntelliJIdea2025.1/idea.log"
+
+################################################################################
+# Installation \
+INSTALLATION:  ## ##################################################################
+
+.PHONY: install-local
+install-local: build  ## install plugin in all local JetBrains IDEs
+	@$(MAKE) install-intellij
+	@$(MAKE) install-rustover
+	@$(MAKE) install-pycharm
+
+.PHONY: install-intellij
+install-intellij: build  ## install plugin in IntelliJ IDEA
+	@echo "Installing plugin in IntelliJ IDEA..."
+	@PLUGIN_ZIP=$$(find build/distributions -name "*.zip" | head -1); \
+	if [ -z "$$PLUGIN_ZIP" ]; then \
+		echo "Error: Plugin ZIP not found. Run 'make build' first."; \
+		exit 1; \
+	fi; \
+	for plugins_dir in "$$HOME/Library/Application Support/JetBrains"/IntelliJIdea*/plugins; do \
+		if [ -d "$$plugins_dir" ]; then \
+			echo "Installing to $$plugins_dir"; \
+			rm -rf "$$plugins_dir/com.sysid.bkmr"; \
+			mkdir -p "$$plugins_dir/com.sysid.bkmr"; \
+			unzip -j "$$PLUGIN_ZIP" "bkmr-intellij-plugin/lib/*" -d "$$plugins_dir/com.sysid.bkmr/lib/"; \
+		fi; \
+	done
+
+.PHONY: install-rustover
+install-rustover: build  ## install plugin in RustRover
+	@echo "Installing plugin in RustRover..."
+	@PLUGIN_ZIP=$$(find build/distributions -name "*.zip" | head -1); \
+	if [ -z "$$PLUGIN_ZIP" ]; then \
+		echo "Error: Plugin ZIP not found. Run 'make build' first."; \
+		exit 1; \
+	fi; \
+	for plugins_dir in "$$HOME/Library/Application Support/JetBrains"/RustRover*/plugins; do \
+		if [ -d "$$plugins_dir" ]; then \
+			echo "Installing to $$plugins_dir"; \
+			rm -rf "$$plugins_dir/com.sysid.bkmr"; \
+			mkdir -p "$$plugins_dir/com.sysid.bkmr"; \
+			unzip -j "$$PLUGIN_ZIP" "bkmr-intellij-plugin/lib/*" -d "$$plugins_dir/com.sysid.bkmr/lib/"; \
+		fi; \
+	done
+
+.PHONY: install-pycharm
+install-pycharm: build  ## install plugin in PyCharm
+	@echo "Installing plugin in PyCharm..."
+	@PLUGIN_ZIP=$$(find build/distributions -name "*.zip" | head -1); \
+	if [ -z "$$PLUGIN_ZIP" ]; then \
+		echo "Error: Plugin ZIP not found. Run 'make build' first."; \
+		exit 1; \
+	fi; \
+	for plugins_dir in "$$HOME/Library/Application Support/JetBrains"/PyCharm*/plugins; do \
+		if [ -d "$$plugins_dir" ]; then \
+			echo "Installing to $$plugins_dir"; \
+			rm -rf "$$plugins_dir/com.sysid.bkmr"; \
+			mkdir -p "$$plugins_dir/com.sysid.bkmr"; \
+			unzip -j "$$PLUGIN_ZIP" "bkmr-intellij-plugin/lib/*" -d "$$plugins_dir/com.sysid.bkmr/lib/"; \
+		fi; \
+	done
+
+.PHONY: uninstall-local
+uninstall-local:  ## uninstall plugin from all local JetBrains IDEs
+	@$(MAKE) uninstall-intellij
+	@$(MAKE) uninstall-rustover
+	@$(MAKE) uninstall-pycharm
+
+.PHONY: uninstall-intellij
+uninstall-intellij:  ## uninstall plugin from IntelliJ IDEA
+	@echo "Uninstalling plugin from IntelliJ IDEA..."
+	@for plugins_dir in "$$HOME/Library/Application Support/JetBrains"/IntelliJIdea*/plugins; do \
+		if [ -d "$$plugins_dir/com.sysid.bkmr" ]; then \
+			echo "Removing from $$plugins_dir"; \
+			rm -rf "$$plugins_dir/com.sysid.bkmr"; \
+		fi; \
+	done
+
+.PHONY: uninstall-rustover
+uninstall-rustover:  ## uninstall plugin from RustRover
+	@echo "Uninstalling plugin from RustRover..."
+	@for plugins_dir in "$$HOME/Library/Application Support/JetBrains"/RustRover*/plugins; do \
+		if [ -d "$$plugins_dir/com.sysid.bkmr" ]; then \
+			echo "Removing from $$plugins_dir"; \
+			rm -rf "$$plugins_dir/com.sysid.bkmr"; \
+		fi; \
+	done
+
+.PHONY: uninstall-pycharm
+uninstall-pycharm:  ## uninstall plugin from PyCharm
+	@echo "Uninstalling plugin from PyCharm..."
+	@for plugins_dir in "$$HOME/Library/Application Support/JetBrains"/PyCharm*/plugins; do \
+		if [ -d "$$plugins_dir/com.sysid.bkmr" ]; then \
+			echo "Removing from $$plugins_dir"; \
+			rm -rf "$$plugins_dir/com.sysid.bkmr"; \
+		fi; \
+	done
 
 ################################################################################
 # Building \
 BUILDING:  ## ##################################################################
+
+.PHONY: all
+all:  clean build sign  # all: clean build sing
+	:
 
 .PHONY: build
 build:  ## build plugin
@@ -39,7 +144,7 @@ sign:  ## sign plugin for distribution
 
 .PHONY: publish
 publish:  ## publish plugin to marketplace
-	./gradlew publishPlugin
+	@./gradlew publishPlugin
 
 ################################################################################
 # Version Management \

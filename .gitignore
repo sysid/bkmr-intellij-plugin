@@ -61,3 +61,4 @@ gradle-app.setting
 # End of https://www.toptal.com/developers/gitignore/api/gradle
 .intellijPlatform/self-update.lock
 .kotlin/
+.intellijPlatform/

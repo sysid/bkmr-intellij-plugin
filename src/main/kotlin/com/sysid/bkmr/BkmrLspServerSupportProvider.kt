@@ -14,8 +14,8 @@ class BkmrLspServerSupportProvider : LspServerSupportProvider {
         file: VirtualFile,
         serverStarter: LspServerSupportProvider.LspServerStarter
     ) {
-        // Only start for text files
-        if (file.isDirectory || file.extension?.lowercase() in listOf("jpg", "png", "gif", "pdf", "zip")) {
+        // Skip directories and binary files
+        if (file.isDirectory) {
             return
         }
 
@@ -24,16 +24,56 @@ class BkmrLspServerSupportProvider : LspServerSupportProvider {
             return
         }
 
-        serverStarter.ensureServerStarted(BkmrLspServerDescriptor(project))
+        // Debug logging for scratch files
+        if (settings.enableDebugLogging) {
+            println("BKMR LSP: File opened - ${file.path}")
+            println("BKMR LSP: File name - ${file.name}")
+            println("BKMR LSP: File extension - ${file.extension}")
+            println("BKMR LSP: Project base path - ${project.basePath}")
+            println("BKMR LSP: Is supported - ${isSupportedFile(file)}")
+        }
+
+        // Start LSP server for supported files
+        if (isSupportedFile(file)) {
+            serverStarter.ensureServerStarted(BkmrLspServerDescriptor(project))
+        }
+    }
+
+    private fun isSupportedFile(file: VirtualFile): Boolean {
+        // Support all text files, exclude only known binary types
+        val extension = file.extension?.lowercase()
+
+        // Exclude known binary file types
+        val binaryExtensions = setOf(
+            "jpg", "jpeg", "png", "gif", "bmp", "ico", "svg",
+            "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
+            "zip", "tar", "gz", "rar", "7z", "bz2",
+            "exe", "dll", "so", "dylib", "app", "dmg",
+            "mp3", "mp4", "avi", "mov", "wav", "flac",
+            "class", "jar", "war", "ear"
+        )
+
+        return !file.isDirectory && extension !in binaryExtensions
     }
 }
 
 class BkmrLspServerDescriptor(project: Project) : ProjectWideLspServerDescriptor(project, "bkmr-lsp") {
 
     override fun isSupportedFile(file: VirtualFile): Boolean {
-        // Support text files only
-        return !file.isDirectory &&
-               file.extension?.lowercase() !in listOf("jpg", "png", "gif", "pdf", "zip", "exe", "dll", "so")
+        // Support all text files, exclude only known binary types
+        val extension = file.extension?.lowercase()
+
+        // Exclude known binary file types
+        val binaryExtensions = setOf(
+            "jpg", "jpeg", "png", "gif", "bmp", "ico", "svg",
+            "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
+            "zip", "tar", "gz", "rar", "7z", "bz2",
+            "exe", "dll", "so", "dylib", "app", "dmg",
+            "mp3", "mp4", "avi", "mov", "wav", "flac",
+            "class", "jar", "war", "ear"
+        )
+
+        return !file.isDirectory && extension !in binaryExtensions
     }
 
     override fun createCommandLine(): GeneralCommandLine {
