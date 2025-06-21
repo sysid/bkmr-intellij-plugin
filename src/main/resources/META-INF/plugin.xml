@@ -11,6 +11,7 @@
         <ul>
             <li>Trigger-based snippet completion using colon (:) character</li>
             <li>Integration with bkmr-lsp server</li>
+            <li>Insert filepath comment action (Ctrl+Shift+F)</li>
             <li>Configurable settings for binary path</li>
             <li>No interference with regular code completion</li>
         </ul>
@@ -20,6 +21,7 @@
             <li>Type <code>:</code> followed by letters to trigger snippet completion</li>
             <li>Examples: <code>:hello</code></li>
             <li>Use Ctrl+Space for manual completion in snippet contexts</li>
+            <li>Use Cmd+Shift+A and search "Bkmr: Insert Filepath Comment" or right-click menu to insert filepath comment</li>
             <li>Snippet will be inserted after the ':hello'.</li>
         </ul>
 
@@ -31,6 +33,12 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <h3>1.0.1</h3>
+        <ul>
+            <li>Added Insert Filepath Comment action (accessible via Cmd+Shift+A)</li>
+            <li>Automatic comment syntax detection for different file types</li>
+            <li>Context menu and Tools menu integration for easy access</li>
+        </ul>
         <h3>1.0.0</h3>
         <ul>
             <li>Initial release with trigger-based completion</li>
@@ -61,6 +69,22 @@
             instance="com.sysid.bkmr.BkmrConfigurable"
             id="com.sysid.bkmr.BkmrConfigurable"
             displayName="bkmr"/>
+            
+        <!-- Notification Group -->
+        <notificationGroup id="Bkmr Notifications" displayType="BALLOON"/>
     </extensions>
+
+    <actions>
+        <!-- Insert Filepath Comment Action -->
+        <action id="com.sysid.bkmr.InsertFilepathCommentAction"
+                class="com.sysid.bkmr.InsertFilepathCommentAction"
+                text="Bkmr: Insert Filepath Comment"
+                description="Insert filepath as comment at the beginning of the file">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+            <add-to-group group-id="EditorTabPopupMenu" anchor="first"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+    </actions>
 
 </idea-plugin>
