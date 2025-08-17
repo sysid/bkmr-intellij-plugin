@@ -58,7 +58,7 @@ intellij {
 
 ### 🔁 5. CI/CD & Custom Servers
 
-* For JetBrains IDE Services (private plugin repo): configure Gradle’s `publishPlugin` with `host`, `token`, and `channels` ([jetbrains.com][5]).
+* For JetBrains IDE Services (private plugin repo): configure Gradle's `publishPlugin` with `host`, `token`, and `channels` ([jetbrains.com][5]).
 * Use `curl` for lightweight uploads:
 
 ```bash

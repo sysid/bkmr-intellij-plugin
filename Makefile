@@ -1,7 +1,41 @@
+# ==============================================================================
+# IntelliJ Platform Plugin Makefile for bkmr-intellij-plugin
+# ==============================================================================
+# This Makefile provides convenient targets for developing, building, testing,
+# and distributing the bkmr IntelliJ Platform plugin.
+#
+# Key Features:
+# - Unit testing with custom task (bypasses kotlinx.coroutines.debug issues)
+# - Multi-IDE installation support (IntelliJ, PyCharm, RustRover)
+# - LSP server integration and log monitoring
+# - Complete build pipeline with signing and marketplace publishing
+# - Version management with GitHub release integration
+#
+# Testing Solution:
+# The 'make test' target uses './gradlew unitTest' instead of './gradlew test'
+# to avoid JVM crashes caused by kotlinx.coroutines.debug agent conflicts with
+# IntelliJ Platform's bundled coroutines library. The custom unitTest task
+# excludes IntelliJ Platform dependencies and disables debug agents.
+#
+# Quick Start:
+#   make help       # Show all available targets
+#   make test       # Run unit tests
+#   make test-ide   # Test plugin in sandbox IDE
+#   make build      # Build plugin distribution
+#
+# Requirements:
+# - JDK 17+
+# - Gradle (via gradlew)
+# - bkmr-lsp binary (for LSP integration)
+# - Optional: GitHub CLI (gh) for release management
+# ==============================================================================
+
 .DEFAULT_GOAL := help
 
+# Project version from VERSION file
 VERSION = $(shell cat VERSION)
 
+# Shell configuration for multi-line commands
 SHELL = bash
 .ONESHELL:
 
@@ -10,20 +44,49 @@ SHELL = bash
 DEVELOPMENT::  ## ##################################################################
 
 .PHONY: init
-init:  ## initialize development environment
+init:  ## initialize development environment (clear sandbox logs)
+	@echo "Clearing IDE sandbox logs..."
 	@rm -fv build/idea-sandbox/*/log/idea.log 2>/dev/null || true
+	@echo "Development environment initialized"
 
 .PHONY: test
-test:  ## run plugin in sandbox IDE
+test:  ## run unit tests (custom task bypassing IntelliJ Platform issues)
+	@echo "Running unit tests..."
+	./gradlew unitTest
+
+.PHONY: test-ide
+test-ide:  ## run plugin in sandbox IDE for integration testing
+	@echo "Launching IntelliJ IDEA with plugin in sandbox..."
 	./gradlew runIde
 
-.PHONY: log-plugin-sandbox
-log-plugin:  ## view plugin logs
+.PHONY: log-plugin
+log-plugin:  ## view plugin logs from sandbox IDE (filtered for completion events)
+	@echo "Tailing sandbox IDE logs (filtering for completion events)..."
+	@if [ ! -f build/idea-sandbox/*/log/idea.log ]; then \
+		echo "No sandbox logs found. Run 'make test-ide' first."; \
+		exit 1; \
+	fi
 	tail -f build/idea-sandbox/*/log/idea.log | grep -u completion
 
+.PHONY: log-plugin-raw
+log-plugin-raw:  ## view raw plugin logs from sandbox IDE (no filtering)
+	@echo "Tailing raw sandbox IDE logs..."
+	@if [ ! -f build/idea-sandbox/*/log/idea.log ]; then \
+		echo "No sandbox logs found. Run 'make test-ide' first."; \
+		exit 1; \
+	fi
+	tail -f build/idea-sandbox/*/log/idea.log
+
 .PHONY: log-plugin-intellij
-log-plugin-intellij:  ## log-plugin-intellij
-	tail -f "$(HOME)/Library/Logs/JetBrains/IntelliJIdea2025.1/idea.log"
+log-plugin-intellij:  ## view plugin logs from installed IntelliJ IDEA
+	@echo "Tailing IntelliJ IDEA logs..."
+	@LOG_FILE="$(HOME)/Library/Logs/JetBrains/IntelliJIdea2025.1/idea.log"; \
+	if [ ! -f "$$LOG_FILE" ]; then \
+		echo "IntelliJ logs not found at $$LOG_FILE"; \
+		echo "Try starting IntelliJ IDEA first."; \
+		exit 1; \
+	fi; \
+	tail -f "$$LOG_FILE"
 
 ################################################################################
 # Installation \
@@ -127,24 +190,43 @@ uninstall-pycharm:  ## uninstall plugin from PyCharm
 BUILDING:  ## ##################################################################
 
 .PHONY: all
-all:  clean build sign  # all: clean build sing
-	:
+all: clean test build sign  ## build complete plugin pipeline (clean → test → build → sign)
+	@echo "Plugin build pipeline completed successfully"
 
 .PHONY: build
-build:  ## build plugin
+build:  ## build plugin distribution ZIP
+	@echo "Building plugin..."
 	./gradlew buildPlugin
+	@echo "Plugin built successfully at: $$(find build/distributions -name '*.zip' | head -1)"
+
+.PHONY: compile
+compile:  ## compile plugin sources without building distribution
+	@echo "Compiling plugin sources..."
+	./gradlew compileKotlin
 
 .PHONY: clean
-clean:  ## clean build artifacts
+clean:  ## clean all build artifacts and caches
+	@echo "Cleaning build artifacts..."
 	./gradlew clean
+	@echo "Build artifacts cleaned"
 
 .PHONY: sign
-sign:  ## sign plugin for distribution
+sign:  ## sign plugin for distribution (requires certificates)
+	@echo "Signing plugin..."
+	@if [ -z "$$CERTIFICATE_CHAIN" ] || [ -z "$$PRIVATE_KEY" ]; then \
+		echo "Warning: CERTIFICATE_CHAIN and PRIVATE_KEY environment variables not set"; \
+		echo "Plugin will be built unsigned."; \
+	fi
 	./gradlew signPlugin
 
 .PHONY: publish
-publish:  ## publish plugin to marketplace
-	@./gradlew publishPlugin
+publish:  ## publish plugin to JetBrains Marketplace (requires token)
+	@echo "Publishing plugin to JetBrains Marketplace..."
+	@if [ -z "$$JETBRAINS_MARKETPLACE_TOKEN" ]; then \
+		echo "Error: JETBRAINS_MARKETPLACE_TOKEN environment variable not set"; \
+		exit 1; \
+	fi
+	./gradlew publishPlugin
 
 ################################################################################
 # Version Management \
@@ -189,8 +271,61 @@ check-github-token:  ## check if GITHUB_TOKEN is set
 	fi
 
 ################################################################################
+# LSP Integration \
+LSP_INTEGRATION:  ## ##################################################################
+
+.PHONY: log-lsp
+log-lsp:  ## view LSP server logs (from bkmr-lsp project)
+	@echo "Viewing LSP server logs..."
+	@if [ -f "/tmp/lsp-bkmr.log" ]; then \
+		tail -f /tmp/lsp-bkmr.log; \
+	else \
+		echo "LSP log file not found at /tmp/lsp-bkmr.log"; \
+		echo "Make sure bkmr-lsp server is running and configured for logging."; \
+	fi
+
+.PHONY: log-lsp-err
+log-lsp-err:  ## view LSP server error logs
+	@echo "Viewing LSP server error logs..."
+	@if [ -f "/tmp/lsp-bkmr-err.log" ]; then \
+		tail -f /tmp/lsp-bkmr-err.log; \
+	else \
+		echo "LSP error log file not found at /tmp/lsp-bkmr-err.log"; \
+		echo "Check if bkmr-lsp server is configured for error logging."; \
+	fi
+
+################################################################################
 # Utilities \
 UTILITIES:  ## ##################################################################
+
+.PHONY: deps
+deps:  ## show plugin dependencies
+	@echo "Showing plugin dependencies..."
+	./gradlew dependencies --configuration runtimeClasspath
+
+.PHONY: check
+check:  ## run all checks (compile + test + build verification)
+	@echo "Running all checks..."
+	@$(MAKE) compile
+	@$(MAKE) test
+	@$(MAKE) build
+	@echo "All checks passed successfully"
+
+.PHONY: info
+info:  ## show project information
+	@echo "=== Plugin Information ==="
+	@echo "Version: $(VERSION)"
+	@echo "Gradle version: $$(./gradlew --version | grep 'Gradle' | head -1)"
+	@echo "Kotlin version: $$(./gradlew --version | grep 'Kotlin' | head -1)"
+	@echo "JVM version: $$(./gradlew --version | grep 'JVM:' | head -1)"
+	@echo ""
+	@echo "=== Build Status ==="
+	@if [ -d "build/distributions" ] && [ -n "$$(find build/distributions -name '*.zip' 2>/dev/null)" ]; then \
+		echo "Plugin ZIP: $$(find build/distributions -name '*.zip' | head -1)"; \
+		echo "Size: $$(du -h $$(find build/distributions -name '*.zip' | head -1) | cut -f1)"; \
+	else \
+		echo "Plugin ZIP: Not built (run 'make build')"; \
+	fi
 
 define PRINT_HELP_PYSCRIPT
 import re, sys

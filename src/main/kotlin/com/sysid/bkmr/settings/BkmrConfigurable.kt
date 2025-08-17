@@ -47,9 +47,9 @@ class BkmrConfigurable : Configurable {
             row {
                 text("""
                     <b>Usage:</b><br/>
-                    Type <code>:</code> followed by letters to trigger snippet completion.<br/>
-                    Examples: <code>:hello</code>, <code>:snip:java</code>, <code>:s:test</code><br/>
-                    Use Ctrl+Space for manual completion in snippet contexts.
+                    Snippets appear automatically in completion popup while typing.<br/>
+                    Use Ctrl+Space for manual completion or Tab/Shift+Tab to navigate snippet placeholders.<br/>
+                    Language-specific filtering and universal snippets are supported.
                 """.trimIndent())
             }
         }

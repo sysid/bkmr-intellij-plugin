@@ -4,21 +4,30 @@ IntelliJ Platform plugin for [bkmr](https://github.com/sysid/bkmr-lsp) snippet m
 
 ## Features
 
-- **Snippet Completion**: Trigger-based completion using colon (`:`) character
-- **LSP Integration**: Seamless integration with bkmr-lsp server
+- **Automatic Snippet Completion**: Snippets appear in completion popup while typing (no trigger characters needed)
+- **Tab Navigation**: Navigate through snippet placeholders with Tab/Shift+Tab (full snippet support)
+- **Language-Aware Filtering**: Snippets automatically filtered by file type (Rust, Python, JavaScript, etc.)
+- **Universal Snippets**: Language-agnostic snippets with automatic syntax translation
+- **Cross-Platform Compatibility**: Works across all JetBrains IDEs (IntelliJ IDEA, PyCharm, WebStorm, CLion, etc.)
+- **LSP Integration**: Seamless integration with bkmr-lsp server (version 0.5.0+)
 - **Filepath Comment Insertion**: Automatically insert filepath as comment at file beginning
 - **Smart Comment Detection**: Automatic comment syntax detection for 20+ file types
 - **Configurable Settings**: Binary path and debug logging options
-- **Non-intrusive**: No interference with regular code completion
 
 ## Usage
 
 ### Snippet Completion
 
-1. Type `:` followed by letters to trigger snippet completion
-2. Examples: `:hello`, `:snip:java`, `:s:test`
-3. Use Ctrl+Space for manual completion in snippet contexts
-4. Navigate with arrow keys, press Tab or Enter to complete
+1. **Automatic completion**: Snippets appear in completion popup while typing
+2. **Manual completion**: Use Ctrl+Space to trigger completion manually
+3. **Snippet navigation**: Use Tab/Shift+Tab to move through placeholder fields
+4. **Language filtering**: Snippets are automatically filtered by current file type
+5. **Universal snippets**: Language-agnostic snippets adapt to your current language syntax
+
+**Examples**:
+- Type `hello` and see matching snippets in completion popup
+- Type `for` and get language-specific loop snippets
+- Universal snippets automatically translate `// comment` to `# comment` in Python files
 
 ### Filepath Comment Insertion
 
@@ -59,12 +68,17 @@ fn main() {
 ## Requirements
 
 ### For Snippet Completion
-- **bkmr-lsp binary**: Available in PATH or configured in plugin settings
-- **bkmr command-line tool**: Version 4.24.0+ with snippets configured
+- **bkmr-lsp binary**: Version 0.5.0+ available in PATH or configured in plugin settings
+- **bkmr command-line tool**: Version 4.24.0+ with snippets configured and `--interpolate` support
 
 ### For Filepath Comment Insertion
 - **No additional requirements**: This feature works independently of the LSP server
 - Works with any text file in any IntelliJ Platform IDE
+
+### Platform Compatibility
+- **Supported IDEs**: All JetBrains IDEs (IntelliJ IDEA, PyCharm, WebStorm, CLion, Rider, etc.)
+- **Version Range**: IntelliJ Platform 2023.2+ through 2026.2
+- **JDK Requirement**: Java 17 or higher
 
 ## Development
 
@@ -154,10 +168,11 @@ Access plugin settings via **File → Settings → Tools → bkmr**:
 ## Troubleshooting
 
 ### Snippet Completion Not Working
-1. Check that bkmr-lsp is installed: `which bkmr-lsp`
+1. Check that bkmr-lsp is installed and version 0.5.0+: `bkmr-lsp --version`
 2. Verify bkmr has snippets: `bkmr search -t _snip_`
-3. Check plugin settings: **File → Settings → Tools → bkmr**
-4. Enable debug logging in settings and check IDE logs
+3. Test manual completion: Type text and press Ctrl+Space to see if snippets appear
+4. Check plugin settings: **File → Settings → Tools → bkmr**
+5. Enable debug logging in settings and check IDE logs
 
 ### Filepath Comment Action Not Visible
 1. Ensure you have a file open in the editor

@@ -9,20 +9,21 @@
 
         <p><b>Features:</b></p>
         <ul>
-            <li>Trigger-based snippet completion using colon (:) character</li>
+            <li>Automatic snippet completion in completion popup while typing</li>
             <li>Integration with bkmr-lsp server</li>
-            <li>Insert filepath comment action (Ctrl+Shift+F)</li>
+            <li>Tab navigation through snippet placeholders</li>
+            <li>Language-aware snippet filtering</li>
+            <li>Universal snippets with automatic syntax translation</li>
+            <li>Insert filepath comment action</li>
             <li>Configurable settings for binary path</li>
-            <li>No interference with regular code completion</li>
         </ul>
 
         <p><b>Usage:</b></p>
         <ul>
-            <li>Type <code>:</code> followed by letters to trigger snippet completion</li>
-            <li>Examples: <code>:hello</code></li>
-            <li>Use Ctrl+Space for manual completion in snippet contexts</li>
+            <li>Snippets appear automatically in completion popup while typing</li>
+            <li>Use Ctrl+Space for manual completion</li>
+            <li>Navigate snippet placeholders with Tab/Shift+Tab</li>
             <li>Use Cmd+Shift+A and search "Bkmr: Insert Filepath Comment" or right-click menu to insert filepath comment</li>
-            <li>Snippet will be inserted after the ':hello'.</li>
         </ul>
 
         <p><b>Requirements:</b></p>
@@ -33,6 +34,14 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <h3>1.1.0</h3>
+        <ul>
+            <li>Upgraded to automatic completion - snippets appear while typing</li>
+            <li>Added Tab navigation through snippet placeholders</li>
+            <li>Enhanced language-aware snippet filtering</li>
+            <li>Support for universal snippets with syntax translation</li>
+            <li>Removed trigger character dependency for better UX</li>
+        </ul>
         <h3>1.0.1</h3>
         <ul>
             <li>Added Insert Filepath Comment action (accessible via Cmd+Shift+A)</li>
@@ -52,7 +61,7 @@
 
     <depends>com.intellij.modules.ultimate</depends>
 
-    <idea-version since-build="232.8660" until-build="251.*"/>
+    <idea-version since-build="232.8660" until-build="262.*"/>
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- LSP Server Support Provider -->
