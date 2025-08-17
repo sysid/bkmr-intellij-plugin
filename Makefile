@@ -93,7 +93,7 @@ log-plugin-intellij:  ## view plugin logs from installed IntelliJ IDEA
 INSTALLATION:  ## ##################################################################
 
 .PHONY: install-local
-install-local: build  ## install plugin in all local JetBrains IDEs
+install-local: build  ## install plugin in all local JetBrains IDEs (!!!DO NOT INTERFER WITH MARKETPLACE!!!)
 	@$(MAKE) install-intellij
 	@$(MAKE) install-rustover
 	@$(MAKE) install-pycharm
@@ -227,6 +227,7 @@ publish:  ## publish plugin to JetBrains Marketplace (requires token)
 		exit 1; \
 	fi
 	./gradlew publishPlugin
+	@echo "Uploaded: https://plugins.jetbrains.com/plugin/27710-bkmr/edit/versions"
 
 ################################################################################
 # Version Management \
