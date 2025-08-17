@@ -87,11 +87,10 @@ class BkmrLspServerDescriptor(project: Project) : ProjectWideLspServerDescriptor
     }
 
     override fun createInitializationOptions(): Any? {
-        // Provide initialization options to ensure proper setup
+        // Provide initialization options for automatic completion
         return mapOf(
             "bkmr" to mapOf(
-                "maxCompletions" to 50,
-                "triggerCharacters" to listOf(":")
+                "maxCompletions" to 50
             )
         )
     }

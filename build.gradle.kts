@@ -18,7 +18,7 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     intellijPlatform {
-        intellijIdeaUltimate("2025.1.1.1")
+        intellijIdeaUltimate("2025.2")
     }
 }
 
@@ -46,7 +46,7 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("242")
-        untilBuild.set("251.*")
+        untilBuild.set("262.*")
 
         changeNotes.set(
             """
