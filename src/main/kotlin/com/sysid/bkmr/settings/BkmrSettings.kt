@@ -13,7 +13,7 @@ import com.intellij.openapi.util.SystemInfo
 class BkmrSettings : PersistentStateComponent<BkmrSettings> {
 
     var enableLspIntegration: Boolean = true
-    var bkmrLspBinaryPath: String = findDefaultBinaryPath()
+    var bkmrBinaryPath: String = findDefaultBinaryPath()
     var enableDebugLogging: Boolean = false
 
     companion object {
@@ -21,8 +21,8 @@ class BkmrSettings : PersistentStateComponent<BkmrSettings> {
             ApplicationManager.getApplication().getService(BkmrSettings::class.java)
 
         private fun findDefaultBinaryPath(): String = when {
-            SystemInfo.isWindows -> "bkmr-lsp.exe"
-            else -> "bkmr-lsp"
+            SystemInfo.isWindows -> "bkmr.exe"
+            else -> "bkmr"
         }
     }
 
@@ -30,7 +30,7 @@ class BkmrSettings : PersistentStateComponent<BkmrSettings> {
 
     override fun loadState(state: BkmrSettings) {
         enableLspIntegration = state.enableLspIntegration
-        bkmrLspBinaryPath = state.bkmrLspBinaryPath
+        bkmrBinaryPath = state.bkmrBinaryPath
         enableDebugLogging = state.enableDebugLogging
     }
 }
