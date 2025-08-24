@@ -1,7 +1,7 @@
 // File: src/main/kotlin/com/sysid/bkmr/settings/BkmrConfigurable.kt
 package com.sysid.bkmr
 
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.components.JBCheckBox
@@ -24,12 +24,15 @@ class BkmrConfigurable : Configurable {
 
         bkmrBinaryField = TextFieldWithBrowseButton().apply {
             text = settings.bkmrBinaryPath
-            addBrowseFolderListener(
-                "Select bkmr Binary",
-                "Choose the bkmr executable file",
-                null,
-                FileChooserDescriptorFactory.createSingleFileDescriptor()
-            )
+            val descriptor = FileChooserDescriptor(true, false, false, false, false, false).apply {
+                title = "Select bkmr Binary"
+                description = "Choose the bkmr executable file"
+            }
+            addActionListener {
+                com.intellij.openapi.fileChooser.FileChooser.chooseFile(descriptor, null, null) { file ->
+                    text = file.path
+                }
+            }
         }
 
         return panel {
