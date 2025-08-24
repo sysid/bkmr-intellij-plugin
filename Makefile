@@ -26,7 +26,7 @@
 # Requirements:
 # - JDK 17+
 # - Gradle (via gradlew)
-# - bkmr-lsp binary (for LSP integration)
+# - bkmr binary (for LSP integration)
 # - Optional: GitHub CLI (gh) for release management
 # ==============================================================================
 
@@ -276,13 +276,13 @@ check-github-token:  ## check if GITHUB_TOKEN is set
 LSP_INTEGRATION:  ## ##################################################################
 
 .PHONY: log-lsp
-log-lsp:  ## view LSP server logs (from bkmr-lsp project)
+log-lsp:  ## view LSP server logs (from bkmr lsp)
 	@echo "Viewing LSP server logs..."
 	@if [ -f "/tmp/lsp-bkmr.log" ]; then \
 		tail -f /tmp/lsp-bkmr.log; \
 	else \
 		echo "LSP log file not found at /tmp/lsp-bkmr.log"; \
-		echo "Make sure bkmr-lsp server is running and configured for logging."; \
+		echo "Make sure bkmr lsp server is running and configured for logging."; \
 	fi
 
 .PHONY: log-lsp-err
@@ -292,7 +292,7 @@ log-lsp-err:  ## view LSP server error logs
 		tail -f /tmp/lsp-bkmr-err.log; \
 	else \
 		echo "LSP error log file not found at /tmp/lsp-bkmr-err.log"; \
-		echo "Check if bkmr-lsp server is configured for error logging."; \
+		echo "Check if bkmr lsp server is configured for error logging."; \
 	fi
 
 ################################################################################

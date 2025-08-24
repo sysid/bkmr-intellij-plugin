@@ -1,6 +1,6 @@
 # bkmr-intellij-plugin
 
-IntelliJ Platform plugin for [bkmr](https://github.com/sysid/bkmr-lsp) snippet manager integration via Language Server Protocol (LSP).
+IntelliJ Platform plugin for [bkmr](https://github.com/sysid/bkmr) snippet manager integration via Language Server Protocol (LSP).
 
 ## Features
 
@@ -9,7 +9,7 @@ IntelliJ Platform plugin for [bkmr](https://github.com/sysid/bkmr-lsp) snippet m
 - **Language-Aware Filtering**: Snippets automatically filtered by file type (Rust, Python, JavaScript, etc.)
 - **Universal Snippets**: Language-agnostic snippets with automatic syntax translation
 - **Cross-Platform Compatibility**: Works across all JetBrains IDEs (IntelliJ IDEA, PyCharm, WebStorm, CLion, etc.)
-- **LSP Integration**: Seamless integration with bkmr-lsp server (version 0.5.0+)
+- **LSP Integration**: Seamless integration with bkmr's built-in LSP server
 - **Filepath Comment Insertion**: Automatically insert filepath as comment at file beginning
 - **Smart Comment Detection**: Automatic comment syntax detection for 20+ file types
 - **Configurable Settings**: Binary path and debug logging options
@@ -68,8 +68,8 @@ fn main() {
 ## Requirements
 
 ### For Snippet Completion
-- **bkmr-lsp binary**: Version 0.5.0+ available in PATH or configured in plugin settings
-- **bkmr command-line tool**: Version 4.24.0+ with snippets configured and `--interpolate` support
+- **bkmr command-line tool**: Version 4.24.0+ with built-in LSP server (`bkmr lsp` command)
+- Snippets must be configured in bkmr with `--interpolate` support
 
 ### For Filepath Comment Insertion
 - **No additional requirements**: This feature works independently of the LSP server
@@ -135,7 +135,7 @@ make init
 Access plugin settings via **File → Settings → Tools → bkmr**:
 
 - **Enable LSP Integration**: Toggle LSP-based completion (affects snippet completion only)
-- **Binary Path**: Path to bkmr-lsp executable (required for snippet completion)
+- **Binary Path**: Path to bkmr executable (required for snippet completion)
 - **Debug Logging**: Enable detailed logging for troubleshooting
 
 **Note**: The filepath comment insertion feature works independently of these settings and doesn't require LSP server configuration.
@@ -144,7 +144,7 @@ Access plugin settings via **File → Settings → Tools → bkmr**:
 
 1. Download from [JetBrains Marketplace](https://plugins.jetbrains.com)
 2. Or install manually: **File → Settings → Plugins → Install Plugin from Disk**
-3. **Optional**: Configure bkmr-lsp binary path in settings for snippet completion
+3. **Optional**: Configure bkmr binary path in settings for snippet completion
 
 **Quick Start**: After installation, you can immediately use the filepath comment feature via `Cmd+Shift+A` → "Bkmr: Insert Filepath Comment".
 
@@ -157,8 +157,8 @@ Access plugin settings via **File → Settings → Tools → bkmr**:
 
 ### Snippet Completion
 - Completion only works in project context (scratch files are ignored)
-- Requires bkmr-lsp server to be running and properly configured
-- LSP server won't start if bkmr-lsp binary is not found in PATH or settings
+- Requires bkmr LSP server to be running and properly configured
+- LSP server won't start if bkmr binary is not found in PATH or settings
 
 ### Filepath Comment Insertion
 - Works with all text files, including scratch files
@@ -168,7 +168,7 @@ Access plugin settings via **File → Settings → Tools → bkmr**:
 ## Troubleshooting
 
 ### Snippet Completion Not Working
-1. Check that bkmr-lsp is installed and version 0.5.0+: `bkmr-lsp --version`
+1. Check that bkmr is installed with LSP support: `bkmr --version`
 2. Verify bkmr has snippets: `bkmr search -t _snip_`
 3. Test manual completion: Type text and press Ctrl+Space to see if snippets appear
 4. Check plugin settings: **File → Settings → Tools → bkmr**

@@ -1,7 +1,7 @@
 // File: src/main/kotlin/com/sysid/bkmr/settings/BkmrConfigurable.kt
 package com.sysid.bkmr
 
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.components.JBCheckBox
@@ -11,7 +11,7 @@ import javax.swing.JComponent
 class BkmrConfigurable : Configurable {
 
     private lateinit var enableLspCheckBox: JBCheckBox
-    private lateinit var bkmrLspBinaryField: TextFieldWithBrowseButton
+    private lateinit var bkmrBinaryField: TextFieldWithBrowseButton
     private lateinit var enableDebugLoggingCheckBox: JBCheckBox
 
     override fun getDisplayName(): String = "bkmr"
@@ -22,23 +22,26 @@ class BkmrConfigurable : Configurable {
         enableLspCheckBox = JBCheckBox("Enable LSP Integration", settings.enableLspIntegration)
         enableDebugLoggingCheckBox = JBCheckBox("Enable Debug Logging", settings.enableDebugLogging)
 
-        bkmrLspBinaryField = TextFieldWithBrowseButton().apply {
-            text = settings.bkmrLspBinaryPath
-            addBrowseFolderListener(
-                "Select bkmr-lsp Binary",
-                "Choose the bkmr-lsp executable file",
-                null,
-                FileChooserDescriptorFactory.createSingleFileDescriptor()
-            )
+        bkmrBinaryField = TextFieldWithBrowseButton().apply {
+            text = settings.bkmrBinaryPath
+            val descriptor = FileChooserDescriptor(true, false, false, false, false, false).apply {
+                title = "Select bkmr Binary"
+                description = "Choose the bkmr executable file"
+            }
+            addActionListener {
+                com.intellij.openapi.fileChooser.FileChooser.chooseFile(descriptor, null, null) { file ->
+                    text = file.path
+                }
+            }
         }
 
         return panel {
             row("Enable LSP Integration:") {
                 cell(enableLspCheckBox)
             }
-            row("bkmr-lsp Binary Path:") {
-                cell(bkmrLspBinaryField)
-                    .comment("Path to the bkmr-lsp executable")
+            row("bkmr Binary Path:") {
+                cell(bkmrBinaryField)
+                    .comment("Path to the bkmr executable")
             }
             row("Enable Debug Logging:") {
                 cell(enableDebugLoggingCheckBox)
@@ -58,21 +61,21 @@ class BkmrConfigurable : Configurable {
     override fun isModified(): Boolean {
         val settings = BkmrSettings.getInstance()
         return enableLspCheckBox.isSelected != settings.enableLspIntegration ||
-            bkmrLspBinaryField.text != settings.bkmrLspBinaryPath ||
+            bkmrBinaryField.text != settings.bkmrBinaryPath ||
             enableDebugLoggingCheckBox.isSelected != settings.enableDebugLogging
     }
 
     override fun apply() {
         val settings = BkmrSettings.getInstance()
         settings.enableLspIntegration = enableLspCheckBox.isSelected
-        settings.bkmrLspBinaryPath = bkmrLspBinaryField.text
+        settings.bkmrBinaryPath = bkmrBinaryField.text
         settings.enableDebugLogging = enableDebugLoggingCheckBox.isSelected
     }
 
     override fun reset() {
         val settings = BkmrSettings.getInstance()
         enableLspCheckBox.isSelected = settings.enableLspIntegration
-        bkmrLspBinaryField.text = settings.bkmrLspBinaryPath
+        bkmrBinaryField.text = settings.bkmrBinaryPath
         enableDebugLoggingCheckBox.isSelected = settings.enableDebugLogging
     }
 }

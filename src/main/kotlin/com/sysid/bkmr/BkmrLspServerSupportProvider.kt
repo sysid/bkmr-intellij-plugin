@@ -20,7 +20,7 @@ class BkmrLspServerSupportProvider : LspServerSupportProvider {
         }
 
         val settings = BkmrSettings.getInstance()
-        if (!settings.enableLspIntegration || settings.bkmrLspBinaryPath.isBlank()) {
+        if (!settings.enableLspIntegration || settings.bkmrBinaryPath.isBlank()) {
             return
         }
 
@@ -57,7 +57,7 @@ class BkmrLspServerSupportProvider : LspServerSupportProvider {
     }
 }
 
-class BkmrLspServerDescriptor(project: Project) : ProjectWideLspServerDescriptor(project, "bkmr-lsp") {
+class BkmrLspServerDescriptor(project: Project) : ProjectWideLspServerDescriptor(project, "bkmr") {
 
     override fun isSupportedFile(file: VirtualFile): Boolean {
         // Support all text files, exclude only known binary types
@@ -80,7 +80,8 @@ class BkmrLspServerDescriptor(project: Project) : ProjectWideLspServerDescriptor
         val settings = BkmrSettings.getInstance()
 
         return GeneralCommandLine().apply {
-            exePath = settings.bkmrLspBinaryPath
+            exePath = settings.bkmrBinaryPath
+            addParameter("lsp")
             withWorkDirectory(project.basePath)
             withEnvironment("RUST_LOG", if (settings.enableDebugLogging) "debug" else "info")
         }
