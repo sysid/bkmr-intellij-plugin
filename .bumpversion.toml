@@ -5,15 +5,7 @@ tag = true
 tag_name = "v{new_version}"
 message = "Bump version: {current_version} → {new_version}"
 
+# VERSION is the single source of truth: build.gradle.kts reads it,
+# patchPluginXml injects it into plugin.xml at build time.
 [[tool.bumpversion.files]]
 filename = "VERSION"
-
-[[tool.bumpversion.files]]
-filename = "build.gradle.kts"
-search = "version = \"{current_version}\""
-replace = "version = \"{new_version}\""
-
-[[tool.bumpversion.files]]
-filename = "src/main/resources/META-INF/plugin.xml"
-search = "<version>{current_version}</version>"
-replace = "<version>{new_version}</version>"

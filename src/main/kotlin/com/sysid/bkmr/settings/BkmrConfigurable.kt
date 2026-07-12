@@ -1,11 +1,12 @@
 // File: src/main/kotlin/com/sysid/bkmr/settings/BkmrConfigurable.kt
-package com.sysid.bkmr
+package com.sysid.bkmr.settings
 
+import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.components.JBCheckBox
-import com.intellij.ui.dsl.builder.*
+import com.intellij.ui.dsl.builder.panel
 import javax.swing.JComponent
 
 class BkmrConfigurable : Configurable {
@@ -29,7 +30,7 @@ class BkmrConfigurable : Configurable {
                 description = "Choose the bkmr executable file"
             }
             addActionListener {
-                com.intellij.openapi.fileChooser.FileChooser.chooseFile(descriptor, null, null) { file ->
+                FileChooser.chooseFile(descriptor, null, null) { file ->
                     text = file.path
                 }
             }
@@ -48,12 +49,14 @@ class BkmrConfigurable : Configurable {
                     .comment("Enable verbose logging for troubleshooting")
             }
             row {
-                text("""
+                text(
+                    """
                     <b>Usage:</b><br/>
-                    Snippets appear automatically in completion popup while typing.<br/>
+                    Snippets appear automatically in the completion popup while typing.<br/>
                     Use Ctrl+Space for manual completion or Tab/Shift+Tab to navigate snippet placeholders.<br/>
-                    Language-specific filtering and universal snippets are supported.
-                """.trimIndent())
+                    Requires the bkmr command-line tool (v4.24.0+) in PATH or configured above.
+                    """.trimIndent(),
+                )
             }
         }
     }
