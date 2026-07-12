@@ -1,11 +1,15 @@
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
+
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "2.1.21"
     id("org.jetbrains.intellij.platform") version "2.6.0"
+    id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
 }
 
 group = "com.sysid"
-version = "3.0.0"
+// Single source of truth for the plugin version; bumped by bump-my-version (see .bumpversion.toml)
+version = providers.fileContents(layout.projectDirectory.file("VERSION")).asText.get().trim()
 
 repositories {
     mavenCentral()
@@ -15,18 +19,36 @@ repositories {
     }
 }
 
-
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     intellijPlatform {
-        intellijIdeaUltimate("2025.2")
+        // useInstaller = false: fetch the ZIP distribution instead of the OS installer (DMG needs
+        // hdiutil mounting, which fails in sandboxed/headless environments; ZIP works everywhere)
+        intellijIdeaUltimate("2025.2", useInstaller = false)
+        pluginVerifier()
     }
-    
+
     // Unit test dependencies (no platform dependencies)
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
     testImplementation("io.mockk:mockk:1.13.8")
     testImplementation("io.kotest:kotest-assertions-core:5.8.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+}
+
+ktlint {
+    // Pin the ktlint engine so local runs and CI enforce identical rules
+    version.set("1.8.0")
+}
+
+intellijPlatform {
+    pluginVerification {
+        ides {
+            // Explicit IU versions (sinceBuild floor + current target): letting the matrix pick
+            // Community releases would false-fail on the com.intellij.modules.ultimate dependency.
+            // useInstaller = false for the same reason as the main dependency (ZIP, no hdiutil).
+            ide(IntelliJPlatformType.IntellijIdeaUltimate, "2024.2", useInstaller = false)
+            ide(IntelliJPlatformType.IntellijIdeaUltimate, "2025.2", useInstaller = false)
+        }
+    }
 }
 
 // Exclude problematic coroutines debug dependencies
@@ -61,20 +83,23 @@ tasks {
         sinceBuild.set("242")
         untilBuild.set("262.*")
 
+        // Current-release notes; keep in sync with CHANGELOG.md when bumping the version
         changeNotes.set(
             """
+            <h3>3.0.0</h3>
             <ul>
-                <li>Initial release of bkmr-lsp integration</li>
-                <li>Code completion for bkmr snippets</li>
-                <li>Execute snippet actions</li>
-                <li>Search and filter snippets</li>
+                <li>Use the consolidated `bkmr lsp` command (bkmr-lsp binary no longer needed)</li>
+                <li>Notification when the configured bkmr binary cannot be found</li>
+                <li>Filepath comment: shebang and BOM aware, no duplicate insertion</li>
             </ul>
-        """.trimIndent()
+            """.trimIndent(),
         )
     }
 
     test {
-        // Disable default test task since IntelliJ Platform plugin interferes
+        // Disabled: the IntelliJ Platform plugin wires the platform test framework (and its
+        // coroutines-debug agent) into the default task, which crashes plain JUnit runs.
+        // Pure unit tests run via the custom `unitTest` task below.
         enabled = false
     }
 
@@ -82,24 +107,24 @@ tasks {
     register<Test>("unitTest") {
         description = "Run pure unit tests without IntelliJ Platform"
         group = "verification"
-        
+
         useJUnitPlatform()
         testLogging {
             events("passed", "skipped", "failed")
             exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
         }
-        
+
         // Use only test source files and minimal dependencies
         testClassesDirs = sourceSets.test.get().output.classesDirs
-        classpath = configurations.testRuntimeClasspath.get().filter { 
-            !it.path.contains("idea") && 
-            !it.path.contains("intellij") &&
-            !it.path.contains("kotlinx-coroutines-debug")
+        classpath = configurations.testRuntimeClasspath.get().filter {
+            !it.path.contains("idea") &&
+                !it.path.contains("intellij") &&
+                !it.path.contains("kotlinx-coroutines-debug")
         } + sourceSets.main.get().output + sourceSets.test.get().output
-        
-        // Standard JVM without IntelliJ Platform interference  
+
+        // Standard JVM without IntelliJ Platform interference
         jvmArgs("-Xmx512m", "-XX:+UseG1GC")
-        
+
         // Disable coroutines debug
         systemProperty("kotlinx.coroutines.debug", "off")
     }
@@ -112,6 +137,15 @@ tasks {
         jvmArgs = listOf("-Xmx2048m")
     }
 
+    verifyPlugin {
+        // Keep the verifier cache inside the workspace; ~/.pluginVerifier is not writable
+        // in sandboxed environments and pollutes $HOME elsewhere
+        systemProperty(
+            "plugin.verifier.home.dir",
+            layout.buildDirectory.dir("pluginVerifier").get().asFile.absolutePath,
+        )
+    }
+
     signPlugin {
         certificateChain.set(System.getenv("CERTIFICATE_CHAIN"))
         privateKey.set(System.getenv("PRIVATE_KEY"))
@@ -120,13 +154,5 @@ tasks {
 
     publishPlugin {
         token.set(System.getenv("JETBRAINS_MARKETPLACE_TOKEN"))
-    }
-
-    register("printToken") {
-        description = "Print the JetBrains Marketplace token status"
-        group = "publishing"
-        doLast {
-            println("Token: " + (project.findProperty("token") ?: "NOT SET"))
-        }
     }
 }

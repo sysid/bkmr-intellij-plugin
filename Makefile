@@ -80,9 +80,9 @@ log-plugin-raw:  ## view raw plugin logs from sandbox IDE (no filtering)
 .PHONY: log-plugin-intellij
 log-plugin-intellij:  ## view plugin logs from installed IntelliJ IDEA
 	@echo "Tailing IntelliJ IDEA logs..."
-	@LOG_FILE="$(HOME)/Library/Logs/JetBrains/IntelliJIdea2025.1/idea.log"; \
-	if [ ! -f "$$LOG_FILE" ]; then \
-		echo "IntelliJ logs not found at $$LOG_FILE"; \
+	@LOG_FILE=$$(ls -t "$(HOME)"/Library/Logs/JetBrains/IntelliJIdea*/idea.log 2>/dev/null | head -1); \
+	if [ -z "$$LOG_FILE" ]; then \
+		echo "IntelliJ logs not found under $(HOME)/Library/Logs/JetBrains/"; \
 		echo "Try starting IntelliJ IDEA first."; \
 		exit 1; \
 	fi; \
@@ -204,6 +204,16 @@ compile:  ## compile plugin sources without building distribution
 	@echo "Compiling plugin sources..."
 	./gradlew compileKotlin
 
+.PHONY: lint
+lint:  ## check Kotlin code style (ktlint)
+	@echo "Checking code style..."
+	./gradlew ktlintCheck
+
+.PHONY: format
+format:  ## auto-format Kotlin code (ktlint)
+	@echo "Formatting code..."
+	./gradlew ktlintFormat
+
 .PHONY: clean
 clean:  ## clean all build artifacts and caches
 	@echo "Cleaning build artifacts..."
@@ -305,8 +315,9 @@ deps:  ## show plugin dependencies
 	./gradlew dependencies --configuration runtimeClasspath
 
 .PHONY: check
-check:  ## run all checks (compile + test + build verification)
+check:  ## run all checks (lint + compile + test + build verification)
 	@echo "Running all checks..."
+	@$(MAKE) lint
 	@$(MAKE) compile
 	@$(MAKE) test
 	@$(MAKE) build

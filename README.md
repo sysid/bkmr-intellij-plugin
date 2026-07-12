@@ -1,16 +1,15 @@
 # bkmr-intellij-plugin
 
+[![Build](https://github.com/sysid/bkmr-intellij-plugin/actions/workflows/build.yml/badge.svg)](https://github.com/sysid/bkmr-intellij-plugin/actions/workflows/build.yml)
+
 IntelliJ Platform plugin for [bkmr](https://github.com/sysid/bkmr) snippet manager integration via Language Server Protocol (LSP).
 
 ## Features
 
 - **Automatic Snippet Completion**: Snippets appear in completion popup while typing (no trigger characters needed)
-- **Tab Navigation**: Navigate through snippet placeholders with Tab/Shift+Tab (full snippet support)
-- **Language-Aware Filtering**: Snippets automatically filtered by file type (Rust, Python, JavaScript, etc.)
-- **Universal Snippets**: Language-agnostic snippets with automatic syntax translation
-- **Cross-Platform Compatibility**: Works across all JetBrains IDEs (IntelliJ IDEA, PyCharm, WebStorm, CLion, etc.)
-- **LSP Integration**: Seamless integration with bkmr's built-in LSP server
-- **Filepath Comment Insertion**: Automatically insert filepath as comment at file beginning
+- **Tab Navigation**: Navigate through snippet placeholders with Tab/Shift+Tab
+- **LSP Integration**: Uses bkmr's built-in LSP server (`bkmr lsp`)
+- **Filepath Comment Insertion**: Insert the relative filepath as a comment at the beginning of the file
 - **Smart Comment Detection**: Automatic comment syntax detection for 20+ file types
 - **Configurable Settings**: Binary path and debug logging options
 
@@ -21,13 +20,8 @@ IntelliJ Platform plugin for [bkmr](https://github.com/sysid/bkmr) snippet manag
 1. **Automatic completion**: Snippets appear in completion popup while typing
 2. **Manual completion**: Use Ctrl+Space to trigger completion manually
 3. **Snippet navigation**: Use Tab/Shift+Tab to move through placeholder fields
-4. **Language filtering**: Snippets are automatically filtered by current file type
-5. **Universal snippets**: Language-agnostic snippets adapt to your current language syntax
 
-**Examples**:
-- Type `hello` and see matching snippets in completion popup
-- Type `for` and get language-specific loop snippets
-- Universal snippets automatically translate `// comment` to `# comment` in Python files
+**Example**: Type `hello` and see matching snippets in the completion popup.
 
 ### Filepath Comment Insertion
 
@@ -54,16 +48,11 @@ fn main() {
 ```
 
 **How it Works:**
-1. Detects the project root by looking for common indicators (`Cargo.toml`, `package.json`, `.git`, `Makefile`, etc.)
-2. Calculates the relative path from project root to the current file
-3. Automatically selects the appropriate comment syntax based on file extension
-4. Inserts the comment at the very beginning of the file (line 1, character 1)
-
-**Benefits:**
-- **Code Organization**: Easily identify file locations in large codebases
-- **Documentation**: Self-documenting code with clear file references
-- **Navigation**: Quick visual reference for file structure
-- **Debugging**: Helpful when reviewing code snippets or error logs
+1. Calculates the relative path from the project base directory to the current file
+   (falls back to the filename for files outside the project)
+2. Automatically selects the appropriate comment syntax based on file extension
+3. Inserts the comment at the beginning of the file — after a `#!` shebang line or byte-order
+   mark if present, and never twice (repeated invocations are no-ops)
 
 ## Requirements
 
@@ -73,11 +62,12 @@ fn main() {
 
 ### For Filepath Comment Insertion
 - **No additional requirements**: This feature works independently of the LSP server
-- Works with any text file in any IntelliJ Platform IDE
 
 ### Platform Compatibility
-- **Supported IDEs**: All JetBrains IDEs (IntelliJ IDEA, PyCharm, WebStorm, CLion, Rider, etc.)
-- **Version Range**: IntelliJ Platform 2023.2+ through 2026.2
+- **Supported IDEs**: IntelliJ-based IDEs with the LSP API — paid/Ultimate-tier products only
+  (IntelliJ IDEA Ultimate, PyCharm Professional, RustRover, GoLand, WebStorm, ...).
+  Community editions are **not** supported (the plugin depends on `com.intellij.modules.ultimate`).
+- **Version Range**: IntelliJ Platform 2024.2 (build 242) through 2026.2
 - **JDK Requirement**: Java 17 or higher
 
 ## Development
@@ -86,35 +76,20 @@ fn main() {
 
 ```bash
 # Build the plugin
-./gradlew buildPlugin
+make build            # or: ./gradlew buildPlugin
 
 # Run IDE with plugin in sandbox
-./gradlew runIde
+make test-ide         # or: ./gradlew runIde
 
-# Run tests  
-./gradlew test
+# Run unit tests (custom task — the default `test` task is disabled, see build.gradle.kts)
+make test             # or: ./gradlew unitTest
 
-# Clean build artifacts
-./gradlew clean
-```
+# Check / fix code style (ktlint)
+make lint
+make format
 
-### Distribution
-
-```bash
-# Sign plugin (requires certificates)
-./gradlew signPlugin
-
-# Publish to JetBrains Marketplace (requires token)
-./gradlew publishPlugin
-```
-
-### Version Management
-
-```bash
-# Bump version (requires bump-my-version)
-bump-my-version bump patch   # 1.0.0 → 1.0.1
-bump-my-version bump minor   # 1.0.0 → 1.1.0  
-bump-my-version bump major   # 1.0.0 → 2.0.0
+# Run everything CI runs
+make check
 ```
 
 ### Debugging
@@ -130,6 +105,23 @@ make log-lsp
 make init
 ```
 
+## Releasing
+
+Version is managed in the `VERSION` file (single source of truth — `build.gradle.kts` reads it,
+`patchPluginXml` injects it into the plugin manifest).
+
+```bash
+# 1. Update CHANGELOG.md and the changeNotes block in build.gradle.kts
+# 2. Bump, tag, push and create the GitHub release (requires GITHUB_TOKEN):
+make bump-patch       # or bump-minor / bump-major
+
+# 3. Publish to JetBrains Marketplace (requires JETBRAINS_MARKETPLACE_TOKEN):
+make publish
+```
+
+CI (GitHub Actions) builds, lints, tests and runs the IntelliJ Plugin Verifier on every push
+and PR to `main`. Publishing is deliberately manual.
+
 ## Configuration
 
 Access plugin settings via **File → Settings → Tools → bkmr**:
@@ -142,7 +134,7 @@ Access plugin settings via **File → Settings → Tools → bkmr**:
 
 ## Installation
 
-1. Download from [JetBrains Marketplace](https://plugins.jetbrains.com)
+1. Download from [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/27710-bkmr)
 2. Or install manually: **File → Settings → Plugins → Install Plugin from Disk**
 3. **Optional**: Configure bkmr binary path in settings for snippet completion
 
@@ -157,13 +149,14 @@ Access plugin settings via **File → Settings → Tools → bkmr**:
 
 ### Snippet Completion
 - Completion only works in project context (scratch files are ignored)
-- Requires bkmr LSP server to be running and properly configured
-- LSP server won't start if bkmr binary is not found in PATH or settings
+- Requires the bkmr LSP server to be running and properly configured
+- If the configured bkmr binary cannot be found, the plugin shows a warning notification and
+  the LSP server is not started
 
 ### Filepath Comment Insertion
 - Works with all text files, including scratch files
 - Binary files (images, executables, etc.) are automatically excluded
-- If no project root is detected, falls back to showing just the filename
+- Files outside the project fall back to showing just the filename
 
 ## Troubleshooting
 

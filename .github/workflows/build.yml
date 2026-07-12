@@ -1,0 +1,46 @@
+# Build, test and verify the plugin on every push/PR to main.
+# Publishing stays manual (make publish) — no tokens or signing secrets in CI.
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # Uses the wrapper's Gradle version; also validates the wrapper jar
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Lint, test, build
+        run: ./gradlew --console=plain ktlintCheck unitTest buildPlugin
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plugin-zip
+          path: build/distributions/*.zip
+
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Run IntelliJ Plugin Verifier
+        run: ./gradlew --console=plain verifyPlugin

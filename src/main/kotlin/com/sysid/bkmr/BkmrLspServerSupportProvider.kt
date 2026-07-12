@@ -2,19 +2,26 @@
 package com.sysid.bkmr
 
 import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.configurations.PathEnvironmentVariableUtil
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.lsp.api.LspServerSupportProvider
 import com.intellij.platform.lsp.api.ProjectWideLspServerDescriptor
+import com.sysid.bkmr.settings.BkmrSettings
+import java.io.File
+
+private const val MAX_COMPLETIONS = 50
 
 class BkmrLspServerSupportProvider : LspServerSupportProvider {
 
     override fun fileOpened(
         project: Project,
         file: VirtualFile,
-        serverStarter: LspServerSupportProvider.LspServerStarter
+        serverStarter: LspServerSupportProvider.LspServerStarter,
     ) {
-        // Skip directories and binary files
         if (file.isDirectory) {
             return
         }
@@ -24,57 +31,65 @@ class BkmrLspServerSupportProvider : LspServerSupportProvider {
             return
         }
 
-        // Debug logging for scratch files
+        val supported = FileSupport.isSupportedExtension(file.extension)
         if (settings.enableDebugLogging) {
-            println("BKMR LSP: File opened - ${file.path}")
-            println("BKMR LSP: File name - ${file.name}")
-            println("BKMR LSP: File extension - ${file.extension}")
-            println("BKMR LSP: Project base path - ${project.basePath}")
-            println("BKMR LSP: Is supported - ${isSupportedFile(file)}")
+            LOG.info(
+                "bkmr LSP: file=${file.path} extension=${file.extension} " +
+                    "basePath=${project.basePath} supported=$supported",
+            )
         }
 
-        // Start LSP server for supported files
-        if (isSupportedFile(file)) {
-            serverStarter.ensureServerStarted(BkmrLspServerDescriptor(project))
+        if (!supported) {
+            return
         }
+
+        if (resolveBinary(settings.bkmrBinaryPath) == null) {
+            notifyMissingBinaryOnce(project, settings.bkmrBinaryPath)
+            return
+        }
+
+        serverStarter.ensureServerStarted(BkmrLspServerDescriptor(project))
     }
 
-    private fun isSupportedFile(file: VirtualFile): Boolean {
-        // Support all text files, exclude only known binary types
-        val extension = file.extension?.lowercase()
+    companion object {
+        private val LOG = logger<BkmrLspServerSupportProvider>()
 
-        // Exclude known binary file types
-        val binaryExtensions = setOf(
-            "jpg", "jpeg", "png", "gif", "bmp", "ico", "svg",
-            "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
-            "zip", "tar", "gz", "rar", "7z", "bz2",
-            "exe", "dll", "so", "dylib", "app", "dmg",
-            "mp3", "mp4", "avi", "mov", "wav", "flac",
-            "class", "jar", "war", "ear"
-        )
+        // Notify once per IDE session, not once per opened file
+        @Volatile
+        private var missingBinaryNotified = false
 
-        return !file.isDirectory && extension !in binaryExtensions
+        /** Resolves the configured binary: absolute path must be executable, bare name is looked up in PATH. */
+        internal fun resolveBinary(configuredPath: String): File? {
+            val candidate = File(configuredPath)
+            if (candidate.isAbsolute) {
+                return candidate.takeIf { it.isFile && it.canExecute() }
+            }
+            return PathEnvironmentVariableUtil.findInPath(configuredPath)
+        }
+
+        private fun notifyMissingBinaryOnce(project: Project, configuredPath: String) {
+            if (missingBinaryNotified) {
+                return
+            }
+            missingBinaryNotified = true
+            LOG.warn("bkmr binary not found: '$configuredPath' — LSP server not started")
+            NotificationGroupManager.getInstance()
+                .getNotificationGroup("Bkmr Notifications")
+                .createNotification(
+                    "bkmr binary not found",
+                    "'$configuredPath' does not resolve to an executable. " +
+                        "Configure the path in Settings → Tools → bkmr.",
+                    NotificationType.WARNING,
+                )
+                .notify(project)
+        }
     }
 }
 
 class BkmrLspServerDescriptor(project: Project) : ProjectWideLspServerDescriptor(project, "bkmr") {
 
-    override fun isSupportedFile(file: VirtualFile): Boolean {
-        // Support all text files, exclude only known binary types
-        val extension = file.extension?.lowercase()
-
-        // Exclude known binary file types
-        val binaryExtensions = setOf(
-            "jpg", "jpeg", "png", "gif", "bmp", "ico", "svg",
-            "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
-            "zip", "tar", "gz", "rar", "7z", "bz2",
-            "exe", "dll", "so", "dylib", "app", "dmg",
-            "mp3", "mp4", "avi", "mov", "wav", "flac",
-            "class", "jar", "war", "ear"
-        )
-
-        return !file.isDirectory && extension !in binaryExtensions
-    }
+    override fun isSupportedFile(file: VirtualFile): Boolean =
+        !file.isDirectory && FileSupport.isSupportedExtension(file.extension)
 
     override fun createCommandLine(): GeneralCommandLine {
         val settings = BkmrSettings.getInstance()
@@ -87,12 +102,9 @@ class BkmrLspServerDescriptor(project: Project) : ProjectWideLspServerDescriptor
         }
     }
 
-    override fun createInitializationOptions(): Any? {
-        // Provide initialization options for automatic completion
-        return mapOf(
-            "bkmr" to mapOf(
-                "maxCompletions" to 50
-            )
-        )
-    }
+    override fun createInitializationOptions(): Any? = mapOf(
+        "bkmr" to mapOf(
+            "maxCompletions" to MAX_COMPLETIONS,
+        ),
+    )
 }
