@@ -24,7 +24,7 @@
 #   make build      # Build plugin distribution
 #
 # Requirements:
-# - JDK 17+
+# - JDK 17 installed (the Makefile pins JAVA_HOME to it; Gradle 8.12 cannot run on Java 25)
 # - Gradle (via gradlew)
 # - bkmr binary (for LSP integration)
 # - Optional: GitHub CLI (gh) for release management
@@ -38,6 +38,13 @@ VERSION = $(shell cat VERSION)
 # Shell configuration for multi-line commands
 SHELL = bash
 .ONESHELL:
+
+# Pin the Gradle launcher JVM to JDK 17.
+# Gradle 8.12 cannot run on Java 25: its bundled Kotlin DSL compiler crashes with
+# `IllegalArgumentException: 25.0.2` in JavaVersion.parse when compiling build.gradle.kts.
+# The project also targets Java 17 (jvmToolchain(17)), so pinning the launcher to 17
+# keeps the launcher and compile target aligned regardless of the ambient PATH java.
+export JAVA_HOME := $(shell /usr/libexec/java_home -v 17)
 
 ################################################################################
 # Development \
@@ -236,7 +243,17 @@ publish:  ## publish plugin to JetBrains Marketplace (requires token)
 		echo "Error: JETBRAINS_MARKETPLACE_TOKEN environment variable not set"; \
 		exit 1; \
 	fi
-	./gradlew publishPlugin
+	@echo "Pre-flight: validating marketplace token..."
+	@HTTP=$$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
+		-H "Authorization: Bearer $$JETBRAINS_MARKETPLACE_TOKEN" \
+		https://plugins.jetbrains.com/api/auth/current-user); \
+	if [ "$$HTTP" != "200" ]; then \
+		echo "Error: marketplace token rejected (HTTP $$HTTP) — set but invalid, expired, or lacking access to this plugin."; \
+		echo "Regenerate at https://plugins.jetbrains.com/author/me/tokens, then re-export JETBRAINS_MARKETPLACE_TOKEN."; \
+		exit 1; \
+	fi; \
+	echo "Token valid (HTTP 200)."
+	./gradlew publishPlugin --stacktrace
 	@echo "Uploaded: https://plugins.jetbrains.com/plugin/27710-bkmr/edit/versions"
 
 ################################################################################

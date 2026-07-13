@@ -40,6 +40,13 @@ ktlint {
 }
 
 intellijPlatform {
+    // Disabled: buildSearchableOptions launches a headless IDE to index the settings panel for
+    // the Settings search box. That IDE acquires a directory lock by binding a Unix-domain socket,
+    // which fails with EPERM in sandboxed/restricted environments (e.g. `make publish`), aborting
+    // the build. The plugin has a single settings field (bkmr binary path), so losing settings-search
+    // indexing is an acceptable trade for a publish pipeline that runs anywhere. The panel still works.
+    buildSearchableOptions = false
+
     pluginVerification {
         ides {
             // Explicit IU versions (sinceBuild floor + current target): letting the matrix pick
