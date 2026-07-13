@@ -30,7 +30,7 @@ dependencies {
     // Unit test dependencies (no platform dependencies)
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
     testImplementation("io.mockk:mockk:1.13.8")
-    testImplementation("io.kotest:kotest-assertions-core:5.8.0")
+    testImplementation("io.kotest:kotest-assertions-core:6.2.2")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 }
 
