@@ -20,7 +20,7 @@ jobs:
           java-version: 17
 
       # Uses the wrapper's Gradle version; also validates the wrapper jar
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Lint, test, build
         run: ./gradlew --console=plain ktlintCheck unitTest buildPlugin
@@ -40,7 +40,7 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Run IntelliJ Plugin Verifier
         run: ./gradlew --console=plain verifyPlugin
