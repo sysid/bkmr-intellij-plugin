@@ -23,10 +23,10 @@ dependencies {
     intellijPlatform {
         // useInstaller = false: fetch the ZIP distribution instead of the OS installer (DMG needs
         // hdiutil mounting, which fails in sandboxed/headless environments; ZIP works everywhere)
-        // Compile against an older platform than the newest verified one: compiling against 2026.2
-        // makes Kotlin emit delegating stubs for LSP interface methods that only exist since 2026.2
-        // (LspIntegrationProvider rename), which fail with NoSuchMethodError on 2024.2.
-        intellijIdeaUltimate("2025.2") { useInstaller = false }
+        // Compile against the sinceBuild floor (2026.1.4 = first build with LspIntegrationProvider):
+        // compiling against a newer platform can make Kotlin emit delegating stubs for interface
+        // methods the floor lacks, which fail with NoSuchMethodError there.
+        intellijIdeaUltimate("2026.1.4") { useInstaller = false }
         pluginVerifier()
     }
 
@@ -35,8 +35,6 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     // Gradle 9 no longer puts the JUnit Platform launcher on the test runtime classpath
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testImplementation("io.mockk:mockk:1.14.11")
-    testImplementation("io.kotest:kotest-assertions-core:6.2.5")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 }
 
@@ -58,7 +56,7 @@ intellijPlatform {
             // Explicit IU versions (sinceBuild floor + current target): letting the matrix pick
             // Community releases would false-fail on the com.intellij.modules.ultimate dependency.
             // useInstaller = false for the same reason as the main dependency (ZIP, no hdiutil).
-            create(IntelliJPlatformType.IntellijIdeaUltimate, "2024.2") { useInstaller = false }
+            create(IntelliJPlatformType.IntellijIdeaUltimate, "2026.1.4") { useInstaller = false }
             create(IntelliJPlatformType.IntellijIdeaUltimate, "2026.2.3") { useInstaller = false }
         }
     }
@@ -93,7 +91,8 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("242")
+        // 261.26222 = 2026.1.4, the first release with the LspIntegrationProvider API
+        sinceBuild.set("261.26222")
         untilBuild.set("262.*")
 
         // Current-release notes; keep in sync with CHANGELOG.md when bumping the version
