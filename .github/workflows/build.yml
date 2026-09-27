@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
 
       # Uses the wrapper's Gradle version; also validates the wrapper jar
       - uses: gradle/actions/setup-gradle@v6
@@ -38,7 +38,7 @@ jobs:
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
 
       - uses: gradle/actions/setup-gradle@v6
 

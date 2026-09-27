@@ -35,7 +35,9 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     // Gradle 9 no longer puts the JUnit Platform launcher on the test runtime classpath
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    // kotlin.stdlib.default.dependency=false (the IDE provides it at runtime), and unitTest runs
+    // without the platform, so tests need the stdlib explicitly
+    testRuntimeOnly(kotlin("stdlib"))
 }
 
 ktlint {
@@ -69,15 +71,15 @@ configurations.all {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 
     compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
         freeCompilerArgs.add("-Xjsr305=strict")
     }
 }
@@ -85,7 +87,7 @@ kotlin {
 tasks {
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
             freeCompilerArgs.add("-Xjsr305=strict")
         }
     }
@@ -98,11 +100,10 @@ tasks {
         // Current-release notes; keep in sync with CHANGELOG.md when bumping the version
         changeNotes.set(
             """
-            <h3>3.0.0</h3>
+            <h3>5.0.0</h3>
             <ul>
-                <li>Use the consolidated `bkmr lsp` command (bkmr-lsp binary no longer needed)</li>
-                <li>Notification when the configured bkmr binary cannot be found</li>
-                <li>Filepath comment: shebang and BOM aware, no duplicate insertion</li>
+                <li>Requires IntelliJ IDEA 2026.1.4 or newer (migrated to the new LspIntegrationProvider API)</li>
+                <li>Build updated to Gradle 9.8, Kotlin 2.4 and Java 21</li>
             </ul>
             """.trimIndent(),
         )

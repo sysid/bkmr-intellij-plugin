@@ -68,7 +68,7 @@ fn main() {
   (IntelliJ IDEA Ultimate, PyCharm Professional, RustRover, GoLand, WebStorm, ...).
   Community editions are **not** supported (the plugin depends on `com.intellij.modules.ultimate`).
 - **Version Range**: IntelliJ Platform 2026.1.4 (build 261.26222) through 2026.2
-- **JDK Requirement**: Java 17 or higher
+- **JDK Requirement**: Java 21 or higher
 
 ## Development
 
