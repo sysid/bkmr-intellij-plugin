@@ -2,8 +2,8 @@ import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "2.1.21"
-    id("org.jetbrains.intellij.platform") version "2.6.0"
+    id("org.jetbrains.kotlin.jvm") version "2.4.20"
+    id("org.jetbrains.intellij.platform") version "2.19.0"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
 }
 
@@ -23,15 +23,21 @@ dependencies {
     intellijPlatform {
         // useInstaller = false: fetch the ZIP distribution instead of the OS installer (DMG needs
         // hdiutil mounting, which fails in sandboxed/headless environments; ZIP works everywhere)
-        intellijIdeaUltimate("2025.2", useInstaller = false)
+        // Compile against the sinceBuild floor (2026.1.4 = first build with LspIntegrationProvider):
+        // compiling against a newer platform can make Kotlin emit delegating stubs for interface
+        // methods the floor lacks, which fail with NoSuchMethodError there.
+        intellijIdeaUltimate("2026.1.4") { useInstaller = false }
         pluginVerifier()
     }
 
     // Unit test dependencies (no platform dependencies)
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
-    testImplementation("io.mockk:mockk:1.13.8")
-    testImplementation("io.kotest:kotest-assertions-core:5.8.0")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    testImplementation(platform("org.junit:junit-bom:6.1.3"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    // Gradle 9 no longer puts the JUnit Platform launcher on the test runtime classpath
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    // kotlin.stdlib.default.dependency=false (the IDE provides it at runtime), and unitTest runs
+    // without the platform, so tests need the stdlib explicitly
+    testRuntimeOnly(kotlin("stdlib"))
 }
 
 ktlint {
@@ -52,8 +58,8 @@ intellijPlatform {
             // Explicit IU versions (sinceBuild floor + current target): letting the matrix pick
             // Community releases would false-fail on the com.intellij.modules.ultimate dependency.
             // useInstaller = false for the same reason as the main dependency (ZIP, no hdiutil).
-            ide(IntelliJPlatformType.IntellijIdeaUltimate, "2024.2", useInstaller = false)
-            ide(IntelliJPlatformType.IntellijIdeaUltimate, "2025.2", useInstaller = false)
+            create(IntelliJPlatformType.IntellijIdeaUltimate, "2026.1.4") { useInstaller = false }
+            create(IntelliJPlatformType.IntellijIdeaUltimate, "2026.2.3") { useInstaller = false }
         }
     }
 }
@@ -65,15 +71,15 @@ configurations.all {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 
     compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
         freeCompilerArgs.add("-Xjsr305=strict")
     }
 }
@@ -81,23 +87,23 @@ kotlin {
 tasks {
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
             freeCompilerArgs.add("-Xjsr305=strict")
         }
     }
 
     patchPluginXml {
-        sinceBuild.set("242")
+        // 261.26222 = 2026.1.4, the first release with the LspIntegrationProvider API
+        sinceBuild.set("261.26222")
         untilBuild.set("262.*")
 
         // Current-release notes; keep in sync with CHANGELOG.md when bumping the version
         changeNotes.set(
             """
-            <h3>3.0.0</h3>
+            <h3>5.0.0</h3>
             <ul>
-                <li>Use the consolidated `bkmr lsp` command (bkmr-lsp binary no longer needed)</li>
-                <li>Notification when the configured bkmr binary cannot be found</li>
-                <li>Filepath comment: shebang and BOM aware, no duplicate insertion</li>
+                <li>Requires IntelliJ IDEA 2026.1.4 or newer (migrated to the new LspIntegrationProvider API)</li>
+                <li>Build updated to Gradle 9.8, Kotlin 2.4 and Java 21</li>
             </ul>
             """.trimIndent(),
         )

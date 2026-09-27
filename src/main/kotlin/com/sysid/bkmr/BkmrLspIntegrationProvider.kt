@@ -1,4 +1,4 @@
-// File: src/main/kotlin/com/sysid/bkmr/BkmrLspServerSupportProvider.kt
+// File: src/main/kotlin/com/sysid/bkmr/BkmrLspIntegrationProvider.kt
 package com.sysid.bkmr
 
 import com.intellij.execution.configurations.GeneralCommandLine
@@ -8,19 +8,19 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.platform.lsp.api.LspServerSupportProvider
-import com.intellij.platform.lsp.api.ProjectWideLspServerDescriptor
+import com.intellij.platform.lsp.api.LspIntegrationProvider
+import com.intellij.platform.lsp.api.ProjectWideLspClientDescriptor
 import com.sysid.bkmr.settings.BkmrSettings
 import java.io.File
 
 private const val MAX_COMPLETIONS = 50
 
-class BkmrLspServerSupportProvider : LspServerSupportProvider {
+class BkmrLspIntegrationProvider : LspIntegrationProvider {
 
     override fun fileOpened(
         project: Project,
         file: VirtualFile,
-        serverStarter: LspServerSupportProvider.LspServerStarter,
+        clientStarter: LspIntegrationProvider.LspClientStarter,
     ) {
         if (file.isDirectory) {
             return
@@ -48,11 +48,11 @@ class BkmrLspServerSupportProvider : LspServerSupportProvider {
             return
         }
 
-        serverStarter.ensureServerStarted(BkmrLspServerDescriptor(project))
+        clientStarter.ensureClientStarted(BkmrLspClientDescriptor(project))
     }
 
     companion object {
-        private val LOG = logger<BkmrLspServerSupportProvider>()
+        private val LOG = logger<BkmrLspIntegrationProvider>()
 
         // Notify once per IDE session, not once per opened file
         @Volatile
@@ -86,7 +86,7 @@ class BkmrLspServerSupportProvider : LspServerSupportProvider {
     }
 }
 
-class BkmrLspServerDescriptor(project: Project) : ProjectWideLspServerDescriptor(project, "bkmr") {
+class BkmrLspClientDescriptor(project: Project) : ProjectWideLspClientDescriptor(project, "bkmr") {
 
     override fun isSupportedFile(file: VirtualFile): Boolean =
         !file.isDirectory && FileSupport.isSupportedExtension(file.extension)
