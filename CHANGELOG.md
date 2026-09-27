@@ -15,7 +15,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 - Debug output goes to the IDE log (`idea.log`) instead of stdout
 - `VERSION` file is the single source of truth for the plugin version
 - Plugin zip no longer bundles the Kotlin stdlib (provided by the platform)
-- Build: Gradle 9.8.0, Kotlin 2.4.20, IntelliJ Platform Gradle Plugin 2.19.0, target IDE 2026.2.3; JUnit 6.1.3, MockK 1.14.11, Kotest 6.2.5; GitHub Actions bumped to latest majors
+- Build: Gradle 9.8.0, Kotlin 2.4.20, IntelliJ Platform Gradle Plugin 2.19.0, Plugin Verifier now also checks IDE 2026.2.3; JUnit 6.1.3, MockK 1.14.11, Kotest 6.2.5; GitHub Actions bumped to latest majors
 
 ## [3.0.0] - 2025-08-24
 

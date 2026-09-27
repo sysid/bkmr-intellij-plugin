@@ -23,7 +23,10 @@ dependencies {
     intellijPlatform {
         // useInstaller = false: fetch the ZIP distribution instead of the OS installer (DMG needs
         // hdiutil mounting, which fails in sandboxed/headless environments; ZIP works everywhere)
-        intellijIdeaUltimate("2026.2.3") { useInstaller = false }
+        // Compile against an older platform than the newest verified one: compiling against 2026.2
+        // makes Kotlin emit delegating stubs for LSP interface methods that only exist since 2026.2
+        // (LspIntegrationProvider rename), which fail with NoSuchMethodError on 2024.2.
+        intellijIdeaUltimate("2025.2") { useInstaller = false }
         pluginVerifier()
     }
 
