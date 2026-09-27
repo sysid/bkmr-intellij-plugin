@@ -2,8 +2,8 @@ import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "2.1.21"
-    id("org.jetbrains.intellij.platform") version "2.6.0"
+    id("org.jetbrains.kotlin.jvm") version "2.4.20"
+    id("org.jetbrains.intellij.platform") version "2.19.0"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
 }
 
@@ -23,14 +23,17 @@ dependencies {
     intellijPlatform {
         // useInstaller = false: fetch the ZIP distribution instead of the OS installer (DMG needs
         // hdiutil mounting, which fails in sandboxed/headless environments; ZIP works everywhere)
-        intellijIdeaUltimate("2025.2", useInstaller = false)
+        intellijIdeaUltimate("2026.2.3") { useInstaller = false }
         pluginVerifier()
     }
 
     // Unit test dependencies (no platform dependencies)
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
-    testImplementation("io.mockk:mockk:1.13.8")
-    testImplementation("io.kotest:kotest-assertions-core:5.8.0")
+    testImplementation(platform("org.junit:junit-bom:6.1.3"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    // Gradle 9 no longer puts the JUnit Platform launcher on the test runtime classpath
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("io.mockk:mockk:1.14.11")
+    testImplementation("io.kotest:kotest-assertions-core:6.2.5")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 }
 
@@ -52,8 +55,8 @@ intellijPlatform {
             // Explicit IU versions (sinceBuild floor + current target): letting the matrix pick
             // Community releases would false-fail on the com.intellij.modules.ultimate dependency.
             // useInstaller = false for the same reason as the main dependency (ZIP, no hdiutil).
-            ide(IntelliJPlatformType.IntellijIdeaUltimate, "2024.2", useInstaller = false)
-            ide(IntelliJPlatformType.IntellijIdeaUltimate, "2025.2", useInstaller = false)
+            create(IntelliJPlatformType.IntellijIdeaUltimate, "2024.2") { useInstaller = false }
+            create(IntelliJPlatformType.IntellijIdeaUltimate, "2026.2.3") { useInstaller = false }
         }
     }
 }

@@ -24,7 +24,7 @@
 #   make build      # Build plugin distribution
 #
 # Requirements:
-# - JDK 17 installed (the Makefile pins JAVA_HOME to it; Gradle 8.12 cannot run on Java 25)
+# - JDK 17 installed (the Makefile pins JAVA_HOME to it to match jvmToolchain(17))
 # - Gradle (via gradlew)
 # - bkmr binary (for LSP integration)
 # - Optional: GitHub CLI (gh) for release management
@@ -40,9 +40,7 @@ SHELL = bash
 .ONESHELL:
 
 # Pin the Gradle launcher JVM to JDK 17.
-# Gradle 8.12 cannot run on Java 25: its bundled Kotlin DSL compiler crashes with
-# `IllegalArgumentException: 25.0.2` in JavaVersion.parse when compiling build.gradle.kts.
-# The project also targets Java 17 (jvmToolchain(17)), so pinning the launcher to 17
+# The project targets Java 17 (jvmToolchain(17)), so pinning the launcher to 17
 # keeps the launcher and compile target aligned regardless of the ambient PATH java.
 export JAVA_HOME := $(shell /usr/libexec/java_home -v 17)
 
