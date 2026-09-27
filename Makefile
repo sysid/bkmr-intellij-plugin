@@ -235,7 +235,7 @@ sign:  ## sign plugin for distribution (requires certificates)
 	./gradlew signPlugin
 
 .PHONY: publish
-publish:  ## publish plugin to JetBrains Marketplace (requires token)
+publish:  ## publish plugin to JetBrains Marketplace (requires token) - https://plugins.jetbrains.com/author/me/tokens
 	@echo "Publishing plugin to JetBrains Marketplace..."
 	@if [ -z "$$JETBRAINS_MARKETPLACE_TOKEN" ]; then \
 		echo "Error: JETBRAINS_MARKETPLACE_TOKEN environment variable not set"; \
@@ -244,7 +244,7 @@ publish:  ## publish plugin to JetBrains Marketplace (requires token)
 	@echo "Pre-flight: validating marketplace token..."
 	@HTTP=$$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
 		-H "Authorization: Bearer $$JETBRAINS_MARKETPLACE_TOKEN" \
-		https://plugins.jetbrains.com/api/auth/current-user); \
+		https://plugins.jetbrains.com/api/users/me); \
 	if [ "$$HTTP" != "200" ]; then \
 		echo "Error: marketplace token rejected (HTTP $$HTTP) — set but invalid, expired, or lacking access to this plugin."; \
 		echo "Regenerate at https://plugins.jetbrains.com/author/me/tokens, then re-export JETBRAINS_MARKETPLACE_TOKEN."; \
