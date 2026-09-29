@@ -214,6 +214,11 @@ lint:  ## check Kotlin code style (ktlint)
 	@echo "Checking code style..."
 	./gradlew ktlintCheck
 
+.PHONY: verify
+verify:  ## verify plugin descriptor and IDE compatibility (Plugin Verifier, downloads IDEs)
+	@echo "Verifying plugin..."
+	./gradlew verifyPluginStructure verifyPlugin
+
 .PHONY: format
 format:  ## auto-format Kotlin code (ktlint)
 	@echo "Formatting code..."

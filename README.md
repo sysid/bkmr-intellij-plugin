@@ -88,6 +88,9 @@ make test             # or: ./gradlew unitTest
 make lint
 make format
 
+# Verify plugin descriptor and compatibility with the target IDEs (Plugin Verifier, needs network)
+make verify           # or: ./gradlew verifyPluginStructure verifyPlugin
+
 # Run everything CI runs
 make check
 ```
@@ -115,7 +118,8 @@ Version is managed in the `VERSION` file (single source of truth — `build.grad
 # 2. Bump, tag, push and create the GitHub release (requires GITHUB_TOKEN):
 make bump-patch       # or bump-minor / bump-major
 
-# 3. Publish to JetBrains Marketplace (requires JETBRAINS_MARKETPLACE_TOKEN):
+# 3. Verify, then publish to JetBrains Marketplace (requires JETBRAINS_MARKETPLACE_TOKEN):
+make verify  # takes time
 make publish
 ```
 
