@@ -64,9 +64,8 @@ fn main() {
 - **No additional requirements**: This feature works independently of the LSP server
 
 ### Platform Compatibility
-- **Supported IDEs**: IntelliJ-based IDEs with the LSP API — paid/Ultimate-tier products only
-  (IntelliJ IDEA Ultimate, PyCharm Professional, RustRover, GoLand, WebStorm, ...).
-  Community editions are **not** supported (the plugin depends on `com.intellij.modules.ultimate`).
+- **Supported IDEs**: IntelliJ-based IDEs that ship the LSP API (IntelliJ IDEA, PyCharm, RustRover,
+  GoLand, WebStorm, ...), with or without a subscription. The plugin depends on `com.intellij.modules.lsp`.
 - **Version Range**: IntelliJ Platform 2026.1.4 (build 261.26222) through 2026.2
 - **JDK Requirement**: Java 21 or higher
 
