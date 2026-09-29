@@ -29,7 +29,7 @@
         </ul>
     ]]></description>
 
-    <depends>com.intellij.modules.ultimate</depends>
+    <!-- <depends>com.intellij.modules.ultimate</depends> -->
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- LSP Integration Provider -->
