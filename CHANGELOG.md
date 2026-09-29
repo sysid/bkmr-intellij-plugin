@@ -5,6 +5,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ## [Unreleased]
 
+## [5.0.1] - 2026-09-29
+
+### Removed
+- Dependency on Ultimate subscription
+
 ## [5.0.0] - 2026-09-27
 
 ### Changed
