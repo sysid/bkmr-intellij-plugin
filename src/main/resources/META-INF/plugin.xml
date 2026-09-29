@@ -29,7 +29,9 @@
         </ul>
     ]]></description>
 
-    <!-- <depends>com.intellij.modules.ultimate</depends> -->
+    <!-- LSP API is a platform module now, so no Ultimate dependency; Marketplace rejects a descriptor without any <depends> -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lsp</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- LSP Integration Provider -->
