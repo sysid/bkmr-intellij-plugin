@@ -5,6 +5,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ## [Unreleased]
 
+## [5.0.2] - 2026-09-29
+
+### Fixed
+- Declare the `com.intellij.modules.platform` and `com.intellij.modules.lsp` dependencies. 5.0.1 had no
+  module dependency at all, which Marketplace rejects; the plugin is now offered for every IDE with the LSP API
+- Plugin change notes were still showing 5.0.0
+- README no longer claims Ultimate-tier products only
+
 ## [5.0.1] - 2026-09-29
 
 ### Removed

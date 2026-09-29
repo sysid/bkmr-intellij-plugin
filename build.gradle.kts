@@ -55,11 +55,12 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            // Explicit IU versions (sinceBuild floor + current target): letting the matrix pick
-            // Community releases would false-fail on the com.intellij.modules.ultimate dependency.
+            // sinceBuild floor + current release of IntelliJ IDEA, plus PyCharm to cover a non-IDEA
+            // IDE (the plugin only needs com.intellij.modules.lsp, not an IDEA-specific module).
             // useInstaller = false for the same reason as the main dependency (ZIP, no hdiutil).
             create(IntelliJPlatformType.IntellijIdeaUltimate, "2026.1.4") { useInstaller = false }
             create(IntelliJPlatformType.IntellijIdeaUltimate, "2026.2.3") { useInstaller = false }
+            create(IntelliJPlatformType.PyCharm, "2026.2.3") { useInstaller = false }
         }
     }
 }
@@ -100,9 +101,13 @@ tasks {
         // Current-release notes; keep in sync with CHANGELOG.md when bumping the version
         changeNotes.set(
             """
+            <h3>5.0.2</h3>
+            <ul>
+                <li>Available in all IntelliJ-based IDEs with the LSP API (2026.1.4+), no subscription required</li>
+            </ul>
             <h3>5.0.0</h3>
             <ul>
-                <li>Requires IntelliJ IDEA 2026.1.4 or newer (migrated to the new LspIntegrationProvider API)</li>
+                <li>Requires IDE version 2026.1.4 or newer (migrated to the new LspIntegrationProvider API)</li>
                 <li>Build updated to Gradle 9.8, Kotlin 2.4 and Java 21</li>
             </ul>
             """.trimIndent(),
