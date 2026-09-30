@@ -117,6 +117,8 @@ Version is managed in the `VERSION` file (single source of truth — `build.grad
 # 2. Bump, tag, push and create the GitHub release (requires GITHUB_TOKEN):
 make bump-patch       # or bump-minor / bump-major
 
+#### CI Pipeline runs build and verify ###
+
 # 3. Verify, then publish to JetBrains Marketplace (requires JETBRAINS_MARKETPLACE_TOKEN):
 make verify  # takes time
 make publish
