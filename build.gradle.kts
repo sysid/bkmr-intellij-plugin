@@ -101,7 +101,7 @@ tasks {
         // Current-release notes; keep in sync with CHANGELOG.md when bumping the version
         changeNotes.set(
             """
-            <h3>5.0.2</h3>
+            <h3>5.0.3</h3>
             <ul>
                 <li>Available in all IntelliJ-based IDEs with the LSP API (2026.1.4+), no subscription required</li>
             </ul>
