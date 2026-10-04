@@ -285,14 +285,24 @@ bump-major: check-github-token  ## bump major version (1.0.0 → 2.0.0)
 	@$(MAKE) create-release
 
 .PHONY: create-release
-create-release: check-github-token  ## create GitHub release
+create-release: check-github-token  ## create GitHub release (notes = this version's CHANGELOG.md section)
 	@if ! command -v gh &>/dev/null; then \
 		echo "GitHub CLI (gh) not installed. Please create release manually."; \
 		exit 1; \
-	else \
-		echo "Creating GitHub release for v$(VERSION)"; \
-		gh release create "v$(VERSION)" --generate-notes --latest; \
 	fi
+	@NOTES=$$($(MAKE) -s release-notes) || exit 1; \
+	echo "Creating GitHub release for v$(VERSION)"; \
+	gh release create "v$(VERSION)" --latest --title "v$(VERSION)" --notes "$$NOTES"
+
+.PHONY: release-notes
+release-notes:  ## print this version's CHANGELOG.md section (body only)
+	@NOTES=$$(awk -v h="## [$(VERSION)]" 'index($$0, h) == 1 { f = 1; next } f && /^## \[/ { exit } f' CHANGELOG.md \
+		| sed -e '/./,$$!d'); \
+	if [ -z "$$NOTES" ]; then \
+		echo "Error: no '## [$(VERSION)]' section with content in CHANGELOG.md" >&2; \
+		exit 1; \
+	fi; \
+	printf '%s\n' "$$NOTES"
 
 .PHONY: check-github-token
 check-github-token:  ## check if GITHUB_TOKEN is set

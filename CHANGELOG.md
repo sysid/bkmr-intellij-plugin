@@ -7,7 +7,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ## [5.0.3] - 2026-09-29
 
-_Includes the unreleased 5.0.2 changes (the version was bumped in the PR, then again at release)._
+_Includes the changes prepared as 5.0.2, which was not released separately._
 
 ### Fixed
 - Declare the `com.intellij.modules.platform` and `com.intellij.modules.lsp` dependencies. 5.0.1 had no

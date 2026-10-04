@@ -110,11 +110,13 @@ make init
 ## Releasing
 
 Version is managed in the `VERSION` file (single source of truth — `build.gradle.kts` reads it,
-`patchPluginXml` injects it into the plugin manifest).
+`patchPluginXml` injects it into the plugin manifest). `CHANGELOG.md` is the single source for release
+notes: the bump turns `## [Unreleased]` into the new version's section, the plugin's "What's New" is
+rendered from that section at build time, and the GitHub release uses it as its notes.
 
 ```bash
-# 1. Update CHANGELOG.md and the changeNotes block in build.gradle.kts
-# 2. Bump, tag, push and create the GitHub release (requires GITHUB_TOKEN):
+# 1. Add the changes under "## [Unreleased]" in CHANGELOG.md (make release-notes previews a version's notes)
+# 2. Bump (also dates the CHANGELOG section), tag, push and create the GitHub release (requires GITHUB_TOKEN):
 make bump-patch       # or bump-minor / bump-major
 
 #### CI Pipeline runs build and verify ###

@@ -20,8 +20,9 @@ make verify     # verifyPluginStructure + Plugin Verifier: downloads IDEs, slow
   releases with `make bump-patch|minor|major` locally, which bumps, tags, pushes and creates the
   GitHub release. Put changes under `## [Unreleased]` in `CHANGELOG.md`; the bump turns that heading
   into `## [<version>] - <date>` (configured in `.bumpversion.toml`). Never add version headings by hand.
-- **Plugin change notes** (`changeNotes` in `build.gradle.kts`) are shown in the IDE's plugin manager;
-  update them with each user-visible change.
+- **`CHANGELOG.md` is the only place to write release notes.** The plugin's change notes are rendered
+  from it at build time (Gradle Changelog Plugin, `changeNotes` in `build.gradle.kts`), and
+  `make create-release` uses the version's section as the GitHub release notes.
 - **`plugin.xml` must keep `<depends>com.intellij.modules.platform</depends>` and
   `<depends>com.intellij.modules.lsp</depends>`.** Without any `<depends>`, Marketplace rejects the
   plugin or treats it as IntelliJ IDEA-only. Never depend on `com.intellij.modules.ultimate`: the LSP API
@@ -37,8 +38,10 @@ make verify     # verifyPluginStructure + Plugin Verifier: downloads IDEs, slow
 - The SessionStart hook (`.claude/hooks/session-start.sh`) installs JDK 21.
 - Sessions can push branches, open and merge PRs, but **cannot push tags or create releases** (HTTP 403).
   Releasing is done by the maintainer locally.
-- Downloaded IDEs (~2-3 GB each) live in `~/.gradle/caches`. On "No space left on device", delete IDE
-  versions no longer referenced in `build.gradle.kts` from `modules-2/files-2.1/com.jetbrains.intellij.*`
-  and `<gradle-version>/transforms`.
+- Downloaded IDEs (~1.5 GB zipped, ~4 GB unpacked each) live in `~/.gradle/caches`. Changing the
+  build's Gradle plugins unpacks every IDE again next to the old copies. On "No space left on device":
+  `./gradlew --stop`, delete `~/.gradle/caches/<gradle-version>/transforms` and `build/` (recreated on
+  demand), and IDE versions no longer referenced in `build.gradle.kts` from
+  `~/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.*`.
 - Plugin Verifier IDE downloads sometimes fail with HTTP 429: wait a minute and retry.
 - Run Gradle with `--max-workers=1` to keep memory use low.

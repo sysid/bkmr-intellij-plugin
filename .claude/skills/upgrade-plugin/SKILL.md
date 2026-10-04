@@ -13,7 +13,7 @@ Work on a branch, keep commits focused (deps / IDE range / API migration), open 
 | What | Where | Latest version from |
 |---|---|---|
 | Gradle wrapper | `gradle/wrapper/gradle-wrapper.properties` | https://services.gradle.org/versions/current |
-| Kotlin, IntelliJ Platform Gradle Plugin, ktlint-gradle | `plugins {}` in `build.gradle.kts` | Gradle Plugin Portal / Maven Central metadata |
+| Kotlin, IntelliJ Platform Gradle Plugin, ktlint-gradle, Gradle Changelog Plugin | `plugins {}` in `build.gradle.kts` | Gradle Plugin Portal / Maven Central metadata |
 | ktlint engine | `ktlint { version.set(...) }` | GitHub releases of pinterest/ktlint |
 | JUnit BOM | `build.gradle.kts` dependencies | Maven Central `org.junit:junit-bom` |
 | GitHub Actions | `.github/workflows/build.yml` | each action's latest major tag |
@@ -80,8 +80,9 @@ Pitfalls seen before:
 ## 6. Document
 
 - `CHANGELOG.md`: entries under `## [Unreleased]` (Added / Changed / Removed / Fixed). Don't create a
-  version heading: `make bump-*` renames the Unreleased section to the new version and date.
-- `changeNotes` in `build.gradle.kts`: summary of the user-visible changes for the next release.
+  version heading: `make bump-*` renames the Unreleased section to the new version and date. The
+  plugin's change notes and the GitHub release notes are generated from these entries, so write them
+  for users.
 - README "Platform Compatibility" (supported IDEs, version range, JDK) when the range or Java changes.
 
 Then push the branch, open the PR, and wait for CI (`build` and `verify` jobs).
@@ -90,9 +91,9 @@ Then push the branch, open the PR, and wait for CI (`build` and `verify` jobs).
 
 Cloud sessions can't push tags or create releases (HTTP 403), so hand these steps to the user:
 
-1. Set the `changeNotes` heading in `build.gradle.kts` to the next version; commit to `main`.
-2. `make bump-patch` (or `bump-minor` / `bump-major`): bumps `VERSION`, turns `## [Unreleased]` in
+1. `make bump-patch` (or `bump-minor` / `bump-major`): bumps `VERSION`, turns `## [Unreleased]` in
    `CHANGELOG.md` into `## [<version>] - <date>` (leaving an empty Unreleased heading above it),
-   commits, tags, pushes, creates the GitHub release. Needs `GITHUB_TOKEN`. It aborts without changing
-   anything if the `## [Unreleased]` heading is missing.
-3. `make verify`, then `make publish` (needs `JETBRAINS_MARKETPLACE_TOKEN`).
+   commits, tags, pushes, and creates the GitHub release with that section as its notes. Needs
+   `GITHUB_TOKEN`. It aborts without changing anything if the `## [Unreleased]` heading is missing.
+2. `make verify`, then `make publish` (needs `JETBRAINS_MARKETPLACE_TOKEN`). The plugin's change notes
+   are rendered from the same CHANGELOG section at build time.
