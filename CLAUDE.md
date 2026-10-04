@@ -18,7 +18,8 @@ make verify     # verifyPluginStructure + Plugin Verifier: downloads IDEs, slow
 
 - **`VERSION` is the single source of truth** for the version. Don't bump it in a PR: the maintainer
   releases with `make bump-patch|minor|major` locally, which bumps, tags, pushes and creates the
-  GitHub release. Put changes under `## [Unreleased]` in `CHANGELOG.md`.
+  GitHub release. Put changes under `## [Unreleased]` in `CHANGELOG.md`; the bump turns that heading
+  into `## [<version>] - <date>` (configured in `.bumpversion.toml`). Never add version headings by hand.
 - **Plugin change notes** (`changeNotes` in `build.gradle.kts`) are shown in the IDE's plugin manager;
   update them with each user-visible change.
 - **`plugin.xml` must keep `<depends>com.intellij.modules.platform</depends>` and

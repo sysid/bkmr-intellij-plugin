@@ -5,6 +5,14 @@ tag = true
 tag_name = "v{new_version}"
 message = "Bump version: {current_version} → {new_version}"
 
+# Release the accumulated changes: the Unreleased section becomes the new version's section,
+# and a fresh, empty Unreleased heading is left above it. Fails the bump if the heading is missing;
+# listed first so that failure happens before VERSION is touched.
+[[tool.bumpversion.files]]
+filename = "CHANGELOG.md"
+search = "## [Unreleased]"
+replace = "## [Unreleased]\n\n## [{new_version}] - {now:%Y-%m-%d}"
+
 # VERSION is the single source of truth: build.gradle.kts reads it,
 # patchPluginXml injects it into plugin.xml at build time.
 [[tool.bumpversion.files]]

@@ -80,7 +80,7 @@ Pitfalls seen before:
 ## 6. Document
 
 - `CHANGELOG.md`: entries under `## [Unreleased]` (Added / Changed / Removed / Fixed). Don't create a
-  version heading.
+  version heading: `make bump-*` renames the Unreleased section to the new version and date.
 - `changeNotes` in `build.gradle.kts`: summary of the user-visible changes for the next release.
 - README "Platform Compatibility" (supported IDEs, version range, JDK) when the range or Java changes.
 
@@ -90,8 +90,9 @@ Then push the branch, open the PR, and wait for CI (`build` and `verify` jobs).
 
 Cloud sessions can't push tags or create releases (HTTP 403), so hand these steps to the user:
 
-1. Move `## [Unreleased]` entries to `## [<next version>] - <date>` and set the `changeNotes` heading
-   to the same version; commit to `main`.
-2. `make bump-patch` (or `bump-minor` / `bump-major`): bumps `VERSION`, tags, pushes, creates the
-   GitHub release. Needs `GITHUB_TOKEN`.
+1. Set the `changeNotes` heading in `build.gradle.kts` to the next version; commit to `main`.
+2. `make bump-patch` (or `bump-minor` / `bump-major`): bumps `VERSION`, turns `## [Unreleased]` in
+   `CHANGELOG.md` into `## [<version>] - <date>` (leaving an empty Unreleased heading above it),
+   commits, tags, pushes, creates the GitHub release. Needs `GITHUB_TOKEN`. It aborts without changing
+   anything if the `## [Unreleased]` heading is missing.
 3. `make verify`, then `make publish` (needs `JETBRAINS_MARKETPLACE_TOKEN`).
