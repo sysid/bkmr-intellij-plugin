@@ -264,21 +264,21 @@ publish:  ## publish plugin to JetBrains Marketplace (requires token) - https://
 VERSION_MGMT:  ## ##################################################################
 
 .PHONY: bump-patch
-bump-patch: check-github-token  ## bump patch version (1.0.0 → 1.0.1)
+bump-patch: check-release-ready  ## bump patch version (1.0.0 → 1.0.1)
 	bump-my-version bump patch
 	git push
 	git push --tags
 	@$(MAKE) create-release
 
 .PHONY: bump-minor
-bump-minor: check-github-token  ## bump minor version (1.0.0 → 1.1.0)
+bump-minor: check-release-ready  ## bump minor version (1.0.0 → 1.1.0)
 	bump-my-version bump minor
 	git push
 	git push --tags
 	@$(MAKE) create-release
 
 .PHONY: bump-major
-bump-major: check-github-token  ## bump major version (1.0.0 → 2.0.0)
+bump-major: check-release-ready  ## bump major version (1.0.0 → 2.0.0)
 	bump-my-version bump major
 	git push
 	git push --tags
@@ -303,6 +303,19 @@ release-notes:  ## print this version's CHANGELOG.md section (body only)
 		exit 1; \
 	fi; \
 	printf '%s\n' "$$NOTES"
+
+.PHONY: check-release-ready
+check-release-ready: check-github-token  ## check that a bump can finish: gh installed, CHANGELOG Unreleased not empty
+	@# Runs before bump-my-version: create-release runs after the tag is pushed, so failing there
+	@# would leave a tag without a GitHub release.
+	@if ! command -v gh >/dev/null 2>&1; then \
+		echo "Error: GitHub CLI (gh) not installed; it is needed to create the release."; \
+		exit 1; \
+	fi
+	@if ! awk '/^## \[Unreleased\]/ { f = 1; next } f && /^## \[/ { exit } f && NF { found = 1 } END { exit !found }' CHANGELOG.md; then \
+		echo "Error: nothing under '## [Unreleased]' in CHANGELOG.md; add the release's changes first."; \
+		exit 1; \
+	fi
 
 .PHONY: check-github-token
 check-github-token:  ## check if GITHUB_TOKEN is set
