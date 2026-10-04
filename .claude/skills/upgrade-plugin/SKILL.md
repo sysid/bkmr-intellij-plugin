@@ -94,6 +94,7 @@ Cloud sessions can't push tags or create releases (HTTP 403), so hand these step
 1. `make bump-patch` (or `bump-minor` / `bump-major`): bumps `VERSION`, turns `## [Unreleased]` in
    `CHANGELOG.md` into `## [<version>] - <date>` (leaving an empty Unreleased heading above it),
    commits, tags, pushes, and creates the GitHub release with that section as its notes. Needs
-   `GITHUB_TOKEN`. It aborts without changing anything if the `## [Unreleased]` heading is missing.
+   `GITHUB_TOKEN`. Before bumping it checks that `GITHUB_TOKEN` is set, `gh` is installed and
+   `## [Unreleased]` has entries, and stops without changing anything otherwise.
 2. `make verify`, then `make publish` (needs `JETBRAINS_MARKETPLACE_TOKEN`). The plugin's change notes
    are rendered from the same CHANGELOG section at build time.
